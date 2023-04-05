@@ -1,10 +1,10 @@
 USE `nlrb_data`;
 DROP TABLE IF EXISTS `cases`;
 CREATE TABLE `cases` (
-    `id` INT NOT NULL AUTO_INCREMENT,
+    `id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     `case_type` VARCHAR(16),
     `region` VARCHAR(128),
-    `case_number` VARCHAR(64) NOT NULL,
+    `case_number` VARCHAR(64) UNIQUE NOT NULL,
     `case_name` VARCHAR(128),
     `case_status` VARCHAR(32),
     `date_filed` DATE,
@@ -21,7 +21,5 @@ CREATE TABLE `cases` (
     `voters` INT,
     `allegations_parse_error` BOOLEAN NOT NULL DEFAULT TRUE,
     `participants_parse_error` BOOLEAN NOT NULL DEFAULT TRUE,
-    `docket_activity_parse_error` BOOLEAN NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (`id`),
-    KEY (`case_number`)
+    `docket_activity_parse_error` BOOLEAN NOT NULL DEFAULT TRUE
 ) ENGINE=InnoDB CHARSET=utf8mb4

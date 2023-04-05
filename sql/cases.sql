@@ -19,6 +19,9 @@ CREATE TABLE `cases` (
     `union_name` VARCHAR(512),
     `unit_sought` VARCHAR (512),
     `voters` INT,
+    `allegations_parsed` BOOLEAN NOT NULL DEFAULT FALSE,
+    `participants_parsed` BOOLEAN NOT NULL DEFAULT FALSE,
+    `docket_activity_parsed` BOOLEAN NOT NULL DEFAULT FALSE,
     `allegations_parse_error` BOOLEAN NOT NULL DEFAULT TRUE,
     `participants_parse_error` BOOLEAN NOT NULL DEFAULT TRUE,
     `docket_activity_parse_error` BOOLEAN NOT NULL DEFAULT TRUE

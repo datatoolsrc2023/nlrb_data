@@ -9,7 +9,7 @@
 `mysql> create database nlrb_data;`
 3. Create the `nlrb_data.cases` table:
 `mysql> source /path/to/nlrb_data/sql/cases.sql`
-4. Update `db_config` with your username, host, and password, then add that file to your .gitignore
+4. Rename `db_config-example.py` to `db_config.py` and add your DB username, host, and password.
 
 ### Clean CSV files and insert them into the `cases` table
 

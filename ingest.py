@@ -78,7 +78,6 @@ def main():
         print(f'Processing {lines} lines of {csv}...')
         clean_head = clean_header(cases_tbl)
         clean_tbl = clean_data(clean_head)
-        insert_into_db(clean_tbl, tablename)
         try:
             insert_into_db(clean_tbl, tablename)
         except Exception as e:

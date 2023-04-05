@@ -1,10 +1,22 @@
 # README
 
-## TODO
+## Setup
 
-- Extract case data from [NLRB case search site](https://nlrb.gov/search/case) by either
-    - Manually downloading CSV(s) of case data, then parsing CSV(s) for case links and scraping additional data for individual cases, or
-    - Scraping HTML tables of case data using requests and BeautifulSoup (and following case links to scrape additional data for individual cases using Scrapy), or Go, from [advanced case search site](https://www.nlrb.gov/advanced-search)
-- Transform and clean case data using PETL or Polars
-- Load case data to database
-- Analyze and visualize case data with Plotly or something else
+### Set up the DB
+
+1. Set up a local MySQL database (actual setup will depend on your OS).
+2. Start mysql and create the `nlrb_data` database:
+`mysql> create database nlrb_data;`
+3. Create the `nlrb_data.cases` table:
+`mysql> source /path/to/nlrb_data/sql/cases.sql`
+4. Rename `db_config-example.py` to `db_config.py` and add your DB username, host, and password.
+
+### Clean CSV files and insert them into the `cases` table
+
+Running ingest.py will clean CSV files and insert the data into the cases table. You can run ingest.py in three ways:
+
+- running `ingest.py` with no arguments will clean and load all lines of all CSV files in the `case_files` directory
+- running `ingest.py some_file.csv` will clean and load all lines of `some_file.csv`
+- running `ingest.py some_file.csv 50` will clean and load the first 50 lines of `some_file.csv`
+
+**Note:** `ingest.py` appends rows to the `cases` table if there are more than zero rows in the table, so if you want to start from an empty table, you will need to truncate the `cases` table before re-running `ingest.py`.

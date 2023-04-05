@@ -1,4 +1,4 @@
-import config
+import db_config
 from os import listdir
 import pymysql
 import petl as etl
@@ -18,7 +18,6 @@ def clean_header(cases_tbl):
     clean_header = [(re.sub(r'^union$', 'union_name', h))
                     for h in clean_header]
     cases_tbl = etl.setheader(cases_tbl, clean_header)
-    print(etl.header(cases_tbl))
     return cases_tbl
 
 
@@ -47,9 +46,10 @@ def clean_data(cases_tbl):
 
 
 def insert_into_db(cases_tbl, tablename):
-    connection = pymysql.connect(host=config.host,
-                                 user=config.user,
-                                 database=config.database)
+    connection = pymysql.connect(host=db_config.host,
+                                 user=db_config.user,
+                                 password=db_config.password,
+                                 database=db_config.database)
     connection.cursor().execute('SET SQL_MODE=ANSI_QUOTES')
     result = etl.fromdb(connection, f'SELECT count(*) from {tablename}')
     db_count = list(etl.values(result, 'count(*)'))[0]

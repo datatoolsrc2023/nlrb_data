@@ -47,3 +47,10 @@ Running `./allegations.py` will:
 * Attempt to parse any allegations within the text
 * Populate the `allegations` table for each allegation found
 * Set the case's `allegations_parse_error` to `YES`/`1` if one or more allegations failed to parse.
+
+## Fixing stuff
+If you find yourself in a pickle while developing, you can always run `./reset.sh` to reload your data set.
+(Currently just the Tesla data.)
+
+This won't help if you changed the SQL files, though.
+You'll have to drop those tables and resource the schema files.

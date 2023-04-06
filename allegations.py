@@ -41,9 +41,12 @@ def process_allegations(cursor, case_row):
 
         # We could also check `if okay:` and mark a *successful* run,
         # but we'd have to update the data model a bit first.
-        if not okay:
-            # Mark case allegations with bad parse
+        if okay:
+            # Mark case with successful allegations parse
             #TODO How do I ensure this worked?
+            cursor.execute('UPDATE cases SET allegations_parse_error = 0 WHERE id = %s;', (case_id))
+        else:
+            # Mark case with failed allegations parse
             cursor.execute('UPDATE cases SET allegations_parse_error = 1 WHERE id = %s;', (case_id))
 
     except Exception as e:
@@ -63,7 +66,9 @@ def main():
     allegations_query = """
     SELECT id, case_number, allegations_raw
     FROM cases
-    WHERE allegations_raw IS NOT NULL AND allegations_raw<>''
+    WHERE allegations_raw IS NOT NULL
+    AND allegations_raw <> ''
+    AND allegations_parse_error IS NULL
     ;
     """
 

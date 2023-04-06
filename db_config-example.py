@@ -1,4 +1,4 @@
-host = ''
-user = ''
-password = ''
+host = 'localhost'
+user = 'nlrb'
+password = 'badpassword'
 database = 'nlrb_data'

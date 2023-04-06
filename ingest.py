@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import db_config
 from os import listdir
 import pymysql
@@ -34,9 +36,9 @@ def convert_closed_date(val, row):
 def clean_data(cases_tbl):
     clean_tbl = etl.addfield(cases_tbl, 'docket_activity_raw', None, 13)
     clean_tbl = etl.addfields(clean_tbl, [
-        ('allegations_parse_error', 0),
-        ('participants_parse_error', 0),
-        ('docket_activity_parse_error', 0)
+        ('allegations_parse_error', None),
+        ('participants_parse_error', None),
+        ('docket_activity_parse_error', None)
     ])
     clean_tbl = etl.convert(clean_tbl, 'date_filed',
                             convert_filed_date, pass_row=True)

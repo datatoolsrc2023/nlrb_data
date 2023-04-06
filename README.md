@@ -18,10 +18,19 @@
 
 ### Clean CSV files and insert them into the `cases` table
 
-Running ingest.py will clean CSV files and insert the data into the cases table. You can run ingest.py in three ways:
+Running `ingest.py` will clean CSV files and insert the data into the cases table. You can run ingest.py in three ways:
 
 - running `ingest.py` with no arguments will clean and load all lines of all CSV files in the `case_files` directory
 - running `ingest.py some_file.csv` will clean and load all lines of `some_file.csv`
 - running `ingest.py some_file.csv 50` will clean and load the first 50 lines of `some_file.csv`
 
 **Note:** `ingest.py` appends rows to the `cases` table if there are more than zero rows in the table, so if you want to start from an empty table, you will need to truncate the `cases` table before re-running `ingest.py`.
+
+### Process allegations
+
+Running `./allegations.py` will:
+
+* Read each case's `allegations_raw`, when not null or empty
+* Attempt to parse any allegations within the text
+* Populate the `allegations` table for each allegation found
+* Set the case's `allegations_parse_error` to `YES`/`1` if one or more allegations failed to parse.

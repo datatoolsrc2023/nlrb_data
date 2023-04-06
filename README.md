@@ -2,6 +2,19 @@
 
 ## Setup
 
+### Install dependencies
+For Mac or Linux systems, all you should need is Python3.
+Then, you can run the following:
+
+```bash
+python3 -m venv venv
+. venv/bin/activate
+pip3 install -r requirements.txt
+```
+
+You can call your virtual environment something else,
+but the `./venv/` directory is already gitignored for this repo.
+
 ### Set up the DB
 
 1. Set up a local MySQL database (actual setup will depend on your OS).

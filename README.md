@@ -5,11 +5,16 @@
 ### Set up the DB
 
 1. Set up a local MySQL database (actual setup will depend on your OS).
-2. Start mysql and create the `nlrb_data` database:
+1. Start mysql and create the `nlrb_data` database:
 `mysql> create database nlrb_data;`
-3. Create the `nlrb_data.cases` table:
-`mysql> source /path/to/nlrb_data/sql/cases.sql`
-4. Rename `db_config-example.py` to `db_config.py` and add your DB username, host, and password.
+1. Set up a user:
+    * `mysql> CREATE USER IF NOT EXISTS nlrb IDENTIFIED BY 'whateveryourpasswordis';` (change the password)
+    * `mysql> GRANT ALL ON nlrb_data.* TO 'nlrb'@'localhost';`
+    * `mysql> FLUSH PRIVILEGES;`
+1. Create tables, assuming you start MySQL from the top level of the git repo:
+    * `mysql> source sql/cases.sql` (or `mysql -u nlrb -p nlrb_data < sql/cases.sql` from your shell)
+    * `mysql> source sql/allegations.sql`
+1. Rename `db_config-example.py` to `db_config.py` and add your DB username, host, and password.
 
 ### Clean CSV files and insert them into the `cases` table
 

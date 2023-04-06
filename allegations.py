@@ -11,7 +11,7 @@ import pymysql
 pat = '(\d\([a-z]+\)\(\d+\)(?:\([A-Z]+\))?) (.+)'
 pat = re.compile(pat)
 
-def _parse_allegations(s: str) -> (str, str):
+def parse_allegations(s: str) -> (str, str):
     lines = (x.strip() for x in s.strip().split('\n'))
     # Ignore empty lines in case of "\n \n" or "\n\n"
     lines = (l for l in lines if l != "")
@@ -30,7 +30,7 @@ def process_allegations(cursor, case_row):
     exc = None
     try:
         okay = True
-        for result in _parse_allegations(raw):
+        for result in parse_allegations(raw):
             code, desc, err = result
             if err is not None:
                 print(f'\tERROR CASE({case_row["case_number"]}): {err}')
@@ -53,6 +53,37 @@ def process_allegations(cursor, case_row):
         cursor.close()
         if exc is not None:
             raise(exc)
+
+
+def main():
+    """Run the migration."""
+    from connection import Connection
+    import db_config
+
+    allegations_query = """
+    SELECT id, case_number, allegations_raw
+    FROM cases
+    WHERE allegations_raw IS NOT NULL AND allegations_raw<>''
+    ;
+    """
+
+    cnx = Connection(db_config)
+    cnx.begin()
+    try:
+        c = cnx.cursor()
+        n = c.execute(allegations_query)
+        print(f'Cases with allegations: {n}')
+        for row in c:
+            process_allegations(cnx.cursor(), row)
+        cnx.commit()
+        print('Migration complete.')
+    except Exception as e:
+        print(f'Error: {e}')
+        print('Rolling back.')
+        cnx.rollback()
+    finally:
+        c.close()
+        cnx.close()
 
 
 def test_regex():
@@ -146,7 +177,7 @@ def test_parse_allegations():
 
     for t in tests:
         print('Testing:', t['description'])
-        got = _parse_allegations(t['case'])
+        got = parse_allegations(t['case'])
         expected = t['expected']
         if got != expected:
             print(f'Expected\n{expected}\nGot\n{got}')
@@ -162,31 +193,4 @@ if __name__ == '__main__':
         sys.exit(1)
 
     print('Tests passed, beginning migration.')
-
-    from connection import Connection
-    import db_config
-
-    allegations_query = """
-    SELECT id, case_number, allegations_raw
-    FROM cases
-    WHERE allegations_raw IS NOT NULL AND allegations_raw<>''
-    ;
-    """
-
-    cnx = Connection(db_config)
-    cnx.begin()
-    try:
-        c = cnx.cursor()
-        n = c.execute(allegations_query)
-        print(f'Cases with allegations: {n}')
-        for row in c:
-            process_allegations(cnx.cursor(), row)
-        cnx.commit()
-        print('Migration complete.')
-    except Exception as e:
-        print(f'Error: {e}')
-        print('Rolling back.')
-        cnx.rollback()
-    finally:
-        c.close()
-        cnx.close()
+    main()

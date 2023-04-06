@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import db_config
 from os import listdir
 import pymysql

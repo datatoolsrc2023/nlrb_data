@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+import sys, os
+sys.path.append(os.getcwd() + '/..')
+import db_config
+from connection import Connection
+
+from collections import namedtuple
 import re
 
 import pymysql
@@ -11,16 +17,24 @@ import pymysql
 pat = '(\d\([a-z]+\)\(\d+\)(?:\([A-Z]+\))?) (.+)'
 pat = re.compile(pat)
 
-def parse_allegations(s: str) -> (str, str):
+Row = namedtuple('Row', 'code desc parse_error raw')
+
+def parse_line(line: str) -> Row:
+    m = pat.match(line)
+    return Row(
+            code=None if m is None else m.group(1),
+            desc=None if m is None else m.group(2),
+            parse_error=True if m is None else False,
+            raw=line
+            )
+
+
+def parse_lines(s: str) -> list[(str, str)]:
     lines = (x.strip() for x in s.strip().split('\n'))
     # Ignore empty lines in case of "\n \n" or "\n\n"
     lines = (l for l in lines if l != "")
-    matches = ((pat.match(line), line) for line in lines)
-    return [
-            (m.group(1), m.group(2), None) if m is not None
-            else (None, None, line)
-            for m,line in matches
-            ]
+    rows = (parse_line(l) for l in lines if l != "")
+    return rows
 
 
 def process_allegations(cursor, case_row):
@@ -30,24 +44,21 @@ def process_allegations(cursor, case_row):
     exc = None
     try:
         okay = True
-        for result in parse_allegations(raw):
-            code, desc, err = result
-            if err is not None:
-                print(f'\tERROR CASE({case_row["case_number"]}): {err}')
+        for r in parse_lines(raw):
+            if r.parse_error:
+                print(f'\tERROR CASE({case_row["case_number"]}): {r.raw}')
                 okay = False
-                continue
-            # Could executemany() here, but then we wouldn't be able to skip on err
-            cursor.execute('INSERT INTO allegations (case_id, code, description) VALUES (%s, %s, %s);', (case_id, code, desc))
 
-        # We could also check `if okay:` and mark a *successful* run,
-        # but we'd have to update the data model a bit first.
-        if okay:
-            # Mark case with successful allegations parse
-            #TODO How do I ensure this worked?
-            cursor.execute('UPDATE cases SET allegations_parse_error = 0 WHERE id = %s;', (case_id))
-        else:
-            # Mark case with failed allegations parse
-            cursor.execute('UPDATE cases SET allegations_parse_error = 1 WHERE id = %s;', (case_id))
+            cursor.execute('''INSERT INTO allegations
+                                (case_id, code, description, parse_error, raw_text)
+                              VALUES (%s, %s, %s, %s, %s);
+                              ''',
+                              (case_id, r.code, r.desc, r.parse_error, r.raw))
+
+        #TODO We might be good to dispense with this part altogether...
+        #TODO How do I ensure this worked?
+        cursor.execute('UPDATE cases SET allegations_parse_error = %s WHERE id = %s;',
+                (0 if okay else 1, case_id))
 
     except Exception as e:
         print(f'Error: {e}')
@@ -60,8 +71,6 @@ def process_allegations(cursor, case_row):
 
 def main():
     """Run the migration."""
-    from connection import Connection
-    from .. import db_config
 
     allegations_query = """
     SELECT id, case_number, allegations_raw

@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-all: setup pre main post teardown
+all: setup pre task post teardown
 
 clean:
 	# Undo everything related to the task. Called manually.
@@ -22,8 +22,8 @@ pre:
 	echo Testing database state
 	python3 ./test_db.py
 
-main:
-	python3 ./allegations.py
+task:
+	python3 ./task.py
 
 
 post:

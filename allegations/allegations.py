@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os
-sys.path.append(os.getcwd() + '/..')
-import db_config
-from connection import Connection
+from common import db_config, Connection
 
 from collections import namedtuple
 import re

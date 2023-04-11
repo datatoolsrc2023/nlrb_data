@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
-import sys, os
-sys.path.append(os.getcwd() + '/..')
-import db_config
+from common import db_config, Connection
 
-from connection import Connection
+import sys
 
 import pymysql
 

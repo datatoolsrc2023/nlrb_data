@@ -29,8 +29,15 @@ if __name__ == '__main__':
         count = c.fetchone()['c']
         if count != 0:
             error = True
-            print(f"Expected {expected} allegations, found {count}")
-        c.execute("SELECT c.case_number, a.raw_text FROM cases c INNER JOIN allegations a ON c.id = a.case_id WHERE a.parse_error = 1;")
+            print(f"Expected 0 parse errors, found {count}")
+            c.execute("""SELECT c.case_number, a.raw_text
+                      FROM cases c
+                      INNER JOIN allegations a
+                      ON c.id = a.case_id
+                      WHERE a.parse_error = 1;
+                      """)
+            for case_number, raw_text in c.fetchall():
+                print(f'Case: {case_number} Raw text: {raw_text}')
     except pymysql.err.ProgrammingError as e:
         print(f'Could not summarize parse errors: {e}')
 

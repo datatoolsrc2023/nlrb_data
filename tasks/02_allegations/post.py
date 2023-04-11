@@ -36,7 +36,8 @@ if __name__ == '__main__':
                       ON c.id = a.case_id
                       WHERE a.parse_error = 1;
                       """)
-            for case_number, raw_text in c.fetchall():
+            for d in c.fetchall():
+                case_number, raw_text = d['case_number'], d['raw_text']
                 print(f'Case: {case_number} Raw text: {raw_text}')
     except pymysql.err.ProgrammingError as e:
         print(f'Could not summarize parse errors: {e}')

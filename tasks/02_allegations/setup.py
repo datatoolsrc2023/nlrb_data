@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import db_config, Connection
+from common import db_config, Connection, project_path
 
 import sys
 
@@ -13,7 +13,7 @@ if __name__ == '__main__':
     error = False
     count = 0
 
-    fn = "../sql/allegations.sql"
+    fn = project_path / 'sql' / 'allegations.sql'
     with open(fn, 'r') as f:
         sql = f.read().strip()
 

@@ -17,7 +17,7 @@ if __name__ == '__main__':
     c = cnx.cursor()
     try:
         c.execute("SELECT COUNT(*) c FROM cases;")
-        count = c.fetchone()['c']
+        count = c.fetchone()[0]
         if count == 0:
             error = True
             print('Expected cases table to be populated, found 0 records')
@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     try:
         c.execute("SELECT COUNT(*) c FROM allegations;")
-        count = c.fetchone()['c']
+        count = c.fetchone()[0]
         if count != 0:
             error = True
             print(f"Expected 0 allegations, found {count}")

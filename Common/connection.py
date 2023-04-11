@@ -14,8 +14,12 @@ class Connection(pymysql.Connection):
                        database=config.database,
                        *args, **kwargs)
 
-    def cursor(self, cursor=pymysql.cursors.DictCursor, **kwargs):
-        """Ensure ANSI_QUOTES, default to DictCursor"""
+    def cursor(self, cursor=None, **kwargs):
+        """Ensure ANSI_QUOTES"""
         c = super().cursor(cursor=cursor, **kwargs)
         c.execute('SET SQL_MODE=ANSI_QUOTES')
         return c
+
+    def dict_cursor(self, **kwargs):
+        """Provide easier access to DictCursor"""
+        return self.cursor(cursor=pymysql.cursors.DictCursor, **kwargs)

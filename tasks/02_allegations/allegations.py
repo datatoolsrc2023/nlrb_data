@@ -81,11 +81,11 @@ def main():
     cnx = Connection(db_config)
     cnx.begin()
     try:
-        c = cnx.cursor()
+        c = cnx.dict_cursor()
         n = c.execute(allegations_query)
         print(f'Cases with allegations: {n}')
         for row in c:
-            process_allegations(cnx.cursor(), row)
+            process_allegations(cnx.dict_cursor(), row)
         cnx.commit()
         print('Migration complete.')
     except Exception as e:

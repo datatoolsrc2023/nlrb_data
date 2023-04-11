@@ -8,7 +8,9 @@ mysql -u nlrb -p nlrb_data -Be 'TRUNCATE allegations; DELETE FROM cases;'
 
 echo "Reloading data"
 ./ingest.py case_files/nlrb-tesla_cases.csv
-./allegations.py
+pushd allegations
+make || exit 1
+popd
 
 echo "Summarizing"
 mysql -u nlrb -p nlrb_data -Be 'SELECT COUNT(*) FROM cases; SELECT COUNT(*) FROM allegations;'

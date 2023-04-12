@@ -1,2 +1,9 @@
-db_config.py
+# virtual environment
 venv/
+
+# database configuration info
+db_config.py
+
+# python miscellany
+.python-version
+__pycache__/

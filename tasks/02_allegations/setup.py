@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import db_config, Connection, project_path
+from common import db_config, Connection, sql
 
 import sys
 
@@ -13,14 +13,7 @@ if __name__ == '__main__':
     error = False
     count = 0
 
-    fn = project_path / 'sql' / 'allegations.sql'
-    with open(fn, 'r') as f:
-        sql = f.read().strip()
-
-    statements = sql.split(';')
-    statements = (s.strip() for s in statements)
-    statements = (s for s in statements if len(s) > 0)
-    statements = (' '.join(s.split()) for s in statements)
+    statements = sql.get_query_lines_from_file('allegations.sql')
 
     cnx = Connection(db_config)
     cnx.begin()

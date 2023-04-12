@@ -1,2 +1,2 @@
 from .connection import Connection
-import db_config
+from . import db_config, paths, sql

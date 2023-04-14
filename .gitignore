@@ -7,3 +7,6 @@ db_config.py
 # python miscellany
 .python-version
 __pycache__/
+
+# database csvs
+casefiles/c_*.csv

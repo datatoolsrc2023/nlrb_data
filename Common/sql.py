@@ -19,8 +19,15 @@ def get_query_lines_from_file(filename: str) -> list[str]:
     return list(statements)
 
 
-def db_cnx(cursorclass=pymysql.cursors.Cursor):
-    return pymysql.connect(**db_config.db_config, cursorclass=cursorclass)
+def db_cnx(host=db_config.host,
+           user=db_config.user,
+           password=db_config.password,
+           database=db_config.database,
+           sql_mode=db_config.sql_mode,
+           cursorclass=pymysql.cursors.Cursor):
+    return pymysql.connect(user=user, host=host, password=password,
+                           database=database, sql_mode=sql_mode,
+                           cursorclass=cursorclass)
 
 
 def petl_insert(cnx, cases_tbl, tablename):
@@ -36,6 +43,6 @@ def petl_insert(cnx, cases_tbl, tablename):
         print(f'Appending data to {tablename}...')
         etl.appenddb(cases_tbl, cnx, tablename)
     else:
-        print(f'Truncating {tablename} and inserting data...')
+        print(f'Truncating and inserting data into {tablename}...')
         etl.todb(cases_tbl, cnx, tablename)
     return None

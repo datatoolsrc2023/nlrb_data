@@ -2,3 +2,4 @@ db_config.py
 venv/
 __pycache__/
 .DS_Store
+db_config.py

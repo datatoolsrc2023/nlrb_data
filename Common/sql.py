@@ -20,10 +20,7 @@ def get_query_lines_from_file(filename: str) -> list[str]:
 
 
 def db_cnx(cursorclass=pymysql.cursors.Cursor):
-    """Returns a database connection object"""
-    # TODO maybe add a context manager to this?
-    cnx = pymysql.connect(**db_config.db_config, cursorclass=cursorclass)
-    return cnx
+    return pymysql.connect(**db_config.db_config, cursorclass=cursorclass)
 
 
 def petl_insert(cnx, cases_tbl, tablename):

@@ -14,19 +14,18 @@ if __name__ == '__main__':
 
     with sql.db_cnx() as cnx:
         cnx.begin()
-        c = cnx.cursor()
-        try:
-            print(f'Creating {app_config.cases_raw} table')
-            for statement in statements:
-                print(statement)
-                c.execute(statement)
-            cnx.commit()
-        except Exception as e:
-            error = True
-            print(f'Failed to create table {app_config.cases_raw}: {e}')
-            print('Rolling back')
-            cnx.rollback()
-        c.close()
+        with cnx.cursor() as c:
+            try:
+                print(f'Creating {app_config.cases_raw} table')
+                for statement in statements:
+                    print(statement)
+                    c.execute(statement)
+                cnx.commit()
+            except Exception as e:
+                error = True
+                print(f'Failed to create table {app_config.cases_raw}: {e}')
+                print('Rolling back')
+                cnx.rollback()
 
     if error:
         sys.exit(1)

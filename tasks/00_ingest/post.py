@@ -26,7 +26,7 @@ if __name__ == '__main__':
                     print(f'Expected {app_config.cases_raw}',
                           'table to be populated,',
                           'found 0 records')
-            except psycopg2.ProgrammingError as e:
+            except (psycopg2.ProgrammingError, psycopg2.OperationalError) as e:
                 print(f'Could not count cases: {e}')
 
     if error:

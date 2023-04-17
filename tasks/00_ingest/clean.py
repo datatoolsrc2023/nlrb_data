@@ -10,7 +10,6 @@ if __name__ == '__main__':
     error = False
 
     with sql.db_cnx() as cnx:
-        cnx.begin()
         with cnx.cursor() as c:
             # Drop raw cases table
             query = f"""

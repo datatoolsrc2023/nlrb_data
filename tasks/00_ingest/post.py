@@ -2,7 +2,7 @@
 
 from common import app_config, sql
 import sys
-import pymysql
+import psycopg2
 
 
 if __name__ == '__main__':
@@ -26,7 +26,7 @@ if __name__ == '__main__':
                     print(f'Expected {app_config.cases_raw}',
                           'table to be populated,',
                           'found 0 records')
-            except pymysql.err.ProgrammingError as e:
+            except psycopg2.ProgrammingError as e:
                 print(f'Could not count cases: {e}')
 
     if error:

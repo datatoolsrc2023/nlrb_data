@@ -2,7 +2,7 @@
 
 from common import app_config, sql
 import sys
-import pymysql
+import psycopg2
 
 
 if __name__ == '__main__':
@@ -25,7 +25,7 @@ if __name__ == '__main__':
                     error = True
                     print(f'Expected {app_config.cases_raw} to exist,',
                           'but table does not exist')
-            except pymysql.err.ProgrammingError as e:
+            except psycopg2.ProgrammingError as e:
                 print(f'Could not test for table existence: {e}')
 
     if error:

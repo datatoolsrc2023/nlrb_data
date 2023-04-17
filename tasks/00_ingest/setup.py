@@ -13,7 +13,6 @@ if __name__ == '__main__':
     statements = sql.get_query_lines_from_file('cases_raw.sql')
 
     with sql.db_cnx() as cnx:
-        cnx.begin()
         with cnx.cursor() as c:
             try:
                 print(f'Creating {app_config.cases_raw} table')

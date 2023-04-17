@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS  cases  (
-     id  INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+     id SERIAL PRIMARY KEY NOT NULL,
      case_type TEXT,
      region TEXT,
-     case_number VARCHAR(64) UNIQUE NOT NULL,
+     case_number TEXT UNIQUE NOT NULL,
      case_name TEXT,
      case_status TEXT,
      date_filed DATE,

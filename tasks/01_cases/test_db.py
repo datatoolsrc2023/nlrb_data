@@ -1,5 +1,5 @@
 from common import app_config, sql
-import pymysql
+import psycopg2
 import sys
 
 if __name__ == '__main__':
@@ -24,7 +24,7 @@ if __name__ == '__main__':
                     print(f'Expected {app_config.cases_raw_deduped}'
                           'table to be populated,',
                           'found 0 records')
-            except pymysql.err.ProgrammingError as e:
+            except (psycopg2.ProgrammingError, psycopg2.OperationalError) as e:
                 print('Could not count rows in'
                       f'{app_config.cases_raw_deduped}: {e}')
 
@@ -41,7 +41,7 @@ if __name__ == '__main__':
                     error = True
                     print(f'Expected {app_config.cases_raw} to exist,'
                           'but table does not exist')
-            except pymysql.err.ProgrammingError as e:
+            except psycopg2.ProgrammingError as e:
                 print(f'Could not test for table existence: {e}')
 
     if error:

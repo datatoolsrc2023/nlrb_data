@@ -2,8 +2,7 @@
 
 from common import app_config, sql
 import sys
-import pymysql
-
+import psycopg2
 
 if __name__ == '__main__':
     """Confirm cases table has rows
@@ -28,7 +27,7 @@ if __name__ == '__main__':
                     print(f'Expected {app_config.cases} table'
                           'to be populated,'
                           'but found 0 records')
-            except pymysql.err.ProgrammingError as e:
+            except (psycopg2.ProgrammingError, psycopg2.OperationalError) as e:
                 print(f'Could not count cases: {e}')
 
     if error:

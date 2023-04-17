@@ -1,5 +1,5 @@
 from common import app_config, sql
-import pymysql
+import psycopg2
 import sys
 
 if __name__ == '__main__':
@@ -18,7 +18,7 @@ if __name__ == '__main__':
             try:
                 c.execute(query)
                 cnx.commit()
-            except pymysql.err.OperationalError as e:
+            except psycopg2.OperationalError as e:
                 error = True
                 print('Could not drop table'
                       f'{app_config.cases_raw_deduped}: {e}')

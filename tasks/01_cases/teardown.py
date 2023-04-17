@@ -7,7 +7,6 @@ if __name__ == '__main__':
     error = False
 
     with sql.db_cnx() as cnx:
-        cnx.begin()
 
         # Drop cases_raw_deduped table
         with cnx.cursor() as c:

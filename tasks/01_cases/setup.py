@@ -14,7 +14,6 @@ def main():
     error = False
 
     with sql.db_cnx() as cnx:
-        cnx.begin()
 
         # Deduplicate cases_raw table into cases_raw_deduped table
         with cnx.cursor() as c:
@@ -44,7 +43,7 @@ def main():
                 cnx.commit()
             except Exception as e:
                 error = True
-                print(f'Failed to create table'
+                print(f'Failed to create table '
                       f'{app_config.cases}: {e}')
                 print('Rolling back')
                 cnx.rollback()

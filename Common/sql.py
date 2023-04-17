@@ -1,7 +1,7 @@
 from . import paths
 import Common.db_config as db_config
 import petl as etl
-import pymysql
+import psycopg2
 
 
 def get_query_lines_from_file(filename: str) -> list[str]:
@@ -19,8 +19,15 @@ def get_query_lines_from_file(filename: str) -> list[str]:
     return list(statements)
 
 
-def db_cnx(cursorclass=pymysql.cursors.Cursor):
-    return pymysql.connect(**db_config.db_config, cursorclass=cursorclass)
+def db_cnx(host=db_config.host,
+           user=db_config.user,
+           password=db_config.password,
+           database=db_config.database,
+           cursor_factory=psycopg2.extensions.cursor,
+           **kwargs):
+    return psycopg2.connect(user=user, host=host, password=password,
+                            database=database, cursor_factory=cursor_factory,
+                            **kwargs)
 
 
 def petl_insert(cnx, cases_tbl, tablename):
@@ -28,14 +35,14 @@ def petl_insert(cnx, cases_tbl, tablename):
     a database tablename, and inserts data into the DB table.
     If there are more than 0 rows in the DB table, appends rows
     to the existing table"""
-    result = etl.fromdb(cnx, f'SELECT count(*) from {tablename}')
-    db_count = list(etl.values(result, 'count(*)'))[0]
+    result = etl.fromdb(cnx, f'SELECT count(*) c from {tablename}')
+    db_count = list(etl.values(result, 'c'))[0]
     # if there's already data in the DB table,
     # append to the table instead of truncating
     if db_count > 0:
         print(f'Appending data to {tablename}...')
         etl.appenddb(cases_tbl, cnx, tablename)
     else:
-        print(f'Truncating {tablename} and inserting data...')
+        print(f'Truncating and inserting data into {tablename}...')
         etl.todb(cases_tbl, cnx, tablename)
     return None

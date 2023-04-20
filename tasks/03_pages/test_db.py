@@ -18,6 +18,7 @@ if __name__ == '__main__':
     try:
         c.execute("SELECT COUNT(*) c FROM cases;")
         count = c.fetchone()[0]
+        print(count)
         if count == 0:
             error = True
             print('Expected cases table to be populated, found 0 records')
@@ -25,7 +26,7 @@ if __name__ == '__main__':
         print(f'Could not count cases: {e}')
 
     try:
-        c.execute("SELECT COUNT(*) c FROM participants;")
+        c.execute("SELECT COUNT(*) c FROM pages;")
         count = c.fetchone()[0]
         if count != 0:
             error = True

@@ -6,9 +6,8 @@ import pymysql
 
 
 if __name__ == '__main__':
-    """Confirm database meets expectations."""
+    """Confirm cases_raw table has rows."""
 
-    error = False
     count = 0
 
     with sql.db_cnx() as cnx:
@@ -22,13 +21,10 @@ if __name__ == '__main__':
                 c.execute(query)
                 count = c.fetchone()[0]
                 if count == 0:
-                    error = True
                     print(f'Expected {app_config.cases_raw}',
                           'table to be populated,',
                           'found 0 records')
+                    sys.exit(1)
             except (pymysql.err.ProgrammingError,
                     pymysql.err.OperationalError) as e:
                 print(f'Could not count cases: {e}')
-
-    if error:
-        sys.exit(1)

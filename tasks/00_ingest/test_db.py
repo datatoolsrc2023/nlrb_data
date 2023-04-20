@@ -6,9 +6,8 @@ import pymysql
 
 
 if __name__ == '__main__':
-    """Confirm database meets expectations."""
+    """Confirm cases_raw table has rows"""
 
-    error = False
     count = 0
 
     with sql.db_cnx() as cnx:
@@ -22,11 +21,9 @@ if __name__ == '__main__':
             try:
                 result = c.execute(query)
                 if result == 0:
-                    error = True
-                    print(f'Expected {app_config.cases_raw} to exist,',
-                          'but table does not exist')
+                    print(f'Expected {app_config.cases_raw} to have rows,',
+                          'but found 0 rows')
+                    sys.exit(1)
             except pymysql.err.ProgrammingError as e:
-                print(f'Could not test for table existence: {e}')
-
-    if error:
-        sys.exit(1)
+                print('Could not test for existence of ',
+                      f'{app_config.cases_raw} table: {e}')

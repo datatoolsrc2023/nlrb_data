@@ -25,7 +25,7 @@ def main():
 
     cnx = sql.db_cnx()
 
-    # load data from CSVs into raw table
+    # load data from CSVs into cases_raw table
     for csv in files:
         cases_tbl = etl.fromcsv(csv)
         if args.lines != 'all':
@@ -33,7 +33,7 @@ def main():
         print(f'Processing {args.lines} lines of {csv}...')
         insert_tbl = ingest.clean_header(cases_tbl)
         try:
-            sql.petl_insert(cnx, insert_tbl, app_config.cases_raw)
+            sql.petl_insert(insert_tbl, cnx, app_config.cases_raw)
         except Exception as e:
             print(f'Error loading to DB: {e}')
             raise e

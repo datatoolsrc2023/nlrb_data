@@ -5,9 +5,8 @@ import sys
 
 
 if __name__ == '__main__':
-    """Ensure database is created as needed."""
+    """Ensure cases_raw table is created."""
 
-    error = False
     count = 0
 
     statements = sql.get_query_lines_from_file('cases_raw.sql')
@@ -16,16 +15,12 @@ if __name__ == '__main__':
         cnx.begin()
         with cnx.cursor() as c:
             try:
-                print(f'Creating {app_config.cases_raw} table')
+                print(f'Creating {app_config.cases_raw} table...')
                 for statement in statements:
-                    print(statement)
                     c.execute(statement)
                 cnx.commit()
             except Exception as e:
-                error = True
                 print(f'Failed to create table {app_config.cases_raw}: {e}')
                 print('Rolling back')
                 cnx.rollback()
-
-    if error:
-        sys.exit(1)
+                sys.exit(1)

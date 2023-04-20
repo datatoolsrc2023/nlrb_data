@@ -3,27 +3,25 @@ SHELL := /bin/bash
 all: setup pre task post teardown
 
 clean:
-	# Undo everything related to the task. Called manually.
+	# Drop cases_raw table
 	python3 ./clean.py
 
 setup:
-	# Anything that needs to be set up for this specific task
-	which python3
+	# Create cases_raw table
 	python3 ./setup.py
 
 teardown:
 	# Anything that needs to be unset every time
-	echo Teardown
 
 pre:
-	# Tests post-setup and pre-main
-	echo Testing that nlrb_data.cases_raw exists
+	# Test that cases_raw table exists
 	python3 ./test_db.py
 
 task:
+	# Insert data from case CSVs into cases_raw table
 	python3 ./task.py
 
 
 post:
-	# Tests post-main and pre-teardown
+	# Test that cases_raw table has rows
 	python3 ./post.py

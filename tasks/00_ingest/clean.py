@@ -5,9 +5,7 @@ import sys
 
 
 if __name__ == '__main__':
-    """Undo all changes this task might have made."""
-
-    error = False
+    """Drop cases_raw table"""
 
     with sql.db_cnx() as cnx:
         cnx.begin()
@@ -22,10 +20,5 @@ if __name__ == '__main__':
                 c.execute(query)
                 cnx.commit()
             except Exception as e:
-                # TODO can we call sys.exit(1) below the print statement?
-                error = True
                 print(f"Failed to drop {app_config.cases_raw}: {e}")
-
-    # Exit gracefully if needed
-    if error:
-        sys.exit(1)
+                sys.exit(1)

@@ -1,38 +1,55 @@
 #!/usr/bin/env python3
 
-import petl as etl
+import polars as pl
 
 
-def clean_header(cases_tbl):
-    print('Setting header...')
-    header = etl.header(cases_tbl)
-    clean_header = [h.replace('allegations', 'allegations_raw')
-                    .replace('participants', 'participants_raw')
-                    for h in header]
-    cases_tbl = etl.setheader(cases_tbl, clean_header)
-    return cases_tbl
-
-
-def convert_filed_date(val, row):
-    split_date = row.date_filed.split('/')
-    return split_date[2] + '-' + split_date[0] + '-' + split_date[1]
-
-
-def convert_closed_date(val, row):
-    split_date = row.date_closed.split('/')
-    return split_date[2] + '-' + split_date[0] + '-' + split_date[1]
-
-
-def clean_data(cases_tbl):
+def clean_data(df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Takes a polars dataframe,
+    renames participants and allegations columns,
+    adds docket_activty_raw, allegations_parse_error,
+    and participants_parse_error columns, and
+    converts date_filed and date_closed columns to Datetime
+    using polars lazy computation.
+    Returns a polars dataframe.
+    """
     print('Cleaning data...')
-    clean_tbl = etl.addfield(cases_tbl, 'docket_activity_raw', None, 13)
-    clean_tbl = etl.addfields(clean_tbl, [
-        ('allegations_parse_error', None),
-        ('participants_parse_error', None),
-        ('docket_activity_parse_error', None)
-    ])
-    clean_tbl = etl.convert(clean_tbl, 'date_filed',
-                            convert_filed_date, pass_row=True)
-    clean_tbl = etl.convert(clean_tbl, 'date_closed',
-                            convert_closed_date, pass_row=True)
-    return clean_tbl
+    df = df.lazy().rename({
+        'participants': 'participants_raw',
+        'allegations': 'allegations_raw'
+    }).with_columns(
+        [
+            pl.lit(None).alias('docket_activity_raw'),
+            pl.lit(None).alias('allegations_parse_error'),
+            pl.lit(None).alias('participants_parse_error'),
+            pl.lit(None).alias('docket_activity_parse_error'),
+            pl.col('date_filed').str.strptime(pl.Datetime, format='%m/%d/%Y')
+            .cast(pl.Datetime),
+            pl.col('date_closed').str.strptime(pl.Datetime, format='%m/%d/%Y',
+                                               strict=False)
+            .cast(pl.Datetime)
+        ]
+    ).select(
+        ['case_type',
+         'region',
+         'case_number',
+         'case_name',
+         'case_status',
+         'date_filed',
+         'date_closed',
+         'reason_closed',
+         'city',
+         'states_and_territories',
+         'employees_involved',
+         'allegations_raw',
+         'participants_raw',
+         'docket_activity_raw',
+         'union_name',
+         'unit_sought',
+         'voters',
+         'allegations_parse_error',
+         'participants_parse_error',
+         'docket_activity_parse_error'
+         ]
+    ).unique(subset=['case_number'], keep='first').collect()
+    return df

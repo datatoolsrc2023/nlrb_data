@@ -11,9 +11,9 @@ CREATE TABLE IF NOT EXISTS `cases_raw` (
     `city` VARCHAR(128),
     `states_and_territories` VARCHAR(512),
     `employees_involved` VARCHAR(512),
-    `allegations_raw` VARCHAR(1024),
-    `participants_raw` VARCHAR(1024),
+    `allegations` VARCHAR(1024),
+    `participants` VARCHAR(1024),
     `union_name` VARCHAR(512),
     `unit_sought` VARCHAR(512),
-    `voters` VARCHAR(16)
+    `voters` INT
 ) ENGINE=InnoDB CHARSET=utf8mb4

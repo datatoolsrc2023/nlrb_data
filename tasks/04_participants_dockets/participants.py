@@ -3,6 +3,8 @@ import re
 from common import paths
 from os import listdir
 import pandas as pd
+import datetime
+import time
 
 
 def parse_participants_str(html_str: str) -> list:
@@ -25,6 +27,9 @@ def parse_participants_str(html_str: str) -> list:
         participants.append(participantDict)
         
     return participants
+
+
+
 def read_tables(html_file_location: str) -> str:
     with open(html_file_location, 'r', encoding='utf-8') as html_file:
             # pd.read_html grabs html tables!
@@ -42,6 +47,11 @@ print(current_pages[4])
 docket, participants = read_tables(html_file_location = str(paths.pages / current_pages[4]))
 
 print(docket.columns)
+print(docket['Issued/Filed  By'].tolist())
+print(docket['Date'].tolist())
+docket['Date'] = pd.to_datetime(docket['Date'], format='%m/%d/%Y')
+docket['Date'] = [datetime.datetime.strftime(x, format='%Y-%m-%d') for x in docket['Date']]
+print(docket['Date'].tolist())
 
 
 

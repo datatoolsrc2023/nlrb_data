@@ -2,22 +2,32 @@ import requests
 from common import paths, Connection, db_config
 from collections import namedtuple
 import pymysql
-from time import sleep
 from os import listdir
 from pathlib import Path
 
 
-def gather_case_numbers_from_cases_table(cursor):
+
+def case_pages_to_fetch(cursor):
     
     e = None
     try:
-        curs.execute("SELECT id, case_number FROM cases;")
-        case_numbers = [x for x in curs.fetchall()]
+        cursor.execute("SELECT id, case_number FROM cases;")
+        cases_case_numbers = [x for x in cursor.fetchall()]
         
-        return list(set(case_numbers))
+        cursor.execute("SELECT case_id, case_number FROM pages;")
+        pages_case_numbers = [x for x in cursor.fetchall()]
+
+        print('case #s:', len(cases_case_numbers), 'page #s:', len(pages_case_numbers))
+
+        case_numbers_to_search = set(cases_case_numbers) - set(pages_case_numbers)
+        print('to search:', len(case_numbers_to_search))
+
+        
+        
+        return list(case_numbers_to_search)
         
     except pymysql.err.ProgrammingError as e:
-        print("Error! {e}")
+        print("Gather from cases table! {e}")
        
         return []
 
@@ -29,14 +39,26 @@ def check_if_page_already_scraped(case_number: str, output_path: str = paths.pag
         return False
 
 
+def check_if_scraped_info_in_db(cursor, case_number: str):
+    exeception = None
+    try:
+        cursor.execute('SELECT COUNT(*) FROM pages WHERE case_number = %s;', 
+                       (case_number,))
+        count = cursor.fetchone()[0]
+        print(count)
+        if count == 0:
+            return False
+        else:
+            return True
+    except pymysql.err.ProgrammingError as exception:
+        print('Check if scraped info in db! {exception}')
+
+
 def fetch_case_page(case_number: str, output_path: Path = paths.pages) -> tuple():
-    if check_if_page_already_scraped(output_path):
-        return None
-    
     fetch_error = False
     
     try:
-        page = requests.get(f'https://www.nlrb.gov/case/{case_number}')
+        case_response = requests.get(f'https://www.nlrb.gov/case/{case_number}')
     
     except Exception as e:
         print(f'Error: {e}')
@@ -45,7 +67,7 @@ def fetch_case_page(case_number: str, output_path: Path = paths.pages) -> tuple(
     fetched = {
         'case_number': case_number, 
         'fetch_error': fetch_error,
-        'raw_page': page,
+        'response': case_response,
      }
 
     return fetched
@@ -65,7 +87,7 @@ def write_case_page(case_number: str, raw_page: str, output_path: Path = paths.p
         write_error=True
     
     written = {'case_number': case_number, 
-            'write_error': write_error,}
+               'write_error': write_error,}
 
     return written
 
@@ -83,31 +105,11 @@ def add_to_pages_table(cursor,
                               ''',
                               (case_id, case_number, fetch_error, write_error)
         )        
-
+        
     except pymysql.err.Error as e:
         print(f'Error: {e}')
     
         
       
-
-
 cnx = Connection(db_config)
-curs = cnx.cursor()  
-cases = gather_case_numbers_from_cases_table(cursor=curs)
-for case_id,number in cases:
-    scraped_status = check_if_page_already_scraped(case_number=number)
-    print(number, 'scraped_status:', scraped_status)
-    if scraped_status == False:
-        fetched = fetch_case_page(case_number=number)
-        written = write_case_page(case_number=number, raw_page=fetched['raw_page'])
-        add_to_pages_table(cursor=curs, 
-                           case_id=case_id, 
-                           case_number=number, 
-                           fetch_error=fetched['fetch_error'], 
-                           write_error=written['write_error'])
-
-curs.close()
-cnx.commit()
-cnx.close()
-
-# add_to_pages_table(curs, case_id=1618, case_number='28-CA-212340', fetch_error=False, write_error=False)
+curs = cnx.cursor() 

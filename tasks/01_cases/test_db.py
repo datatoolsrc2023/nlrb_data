@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import app_config, sql
+from common import db_config, sql
 import pymysql
 import sys
 
@@ -15,14 +15,14 @@ if __name__ == '__main__':
         with cnx.cursor() as c:
             query = f"""
                     SELECT table_name from information_schema.tables\
-                    WHERE table_schema = '{app_config.schema}'\
-                    AND table_name = '{app_config.cases_raw}';
+                    WHERE table_schema = '{db_config.schema}'\
+                    AND table_name = '{db_config.cases_raw}';
                     """
             try:
                 result = c.execute(query)
                 if result == 0:
                     error = True
-                    print(f'Expected {app_config.cases_raw} to exist,'
+                    print(f'Expected {db_config.cases_raw} to exist,'
                           'but table does not exist')
                     sys.exit(1)
             except pymysql.err.ProgrammingError as e:

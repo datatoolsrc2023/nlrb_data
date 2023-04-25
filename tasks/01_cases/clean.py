@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import app_config, sql
+from common import db_config, sql
 import sys
 
 
@@ -14,12 +14,12 @@ if __name__ == '__main__':
         with cnx.cursor() as c:
             query = f"""
                     DROP TABLE IF EXISTS
-                    {app_config.schema}.{app_config.cases}
+                    {db_config.schema}.{db_config.cases}
                     """
             try:
-                print(f'Dropping {app_config.cases} table')
+                print(f'Dropping {db_config.cases} table')
                 c.execute(query)
                 cnx.commit()
             except Exception as e:
-                print(f"Failed to drop {app_config.cases}: {e}")
+                print(f"Failed to drop {db_config.cases}: {e}")
                 sys.exit(1)

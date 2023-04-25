@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import app_config, sql
+from common import db_config, sql
 import sys
 import pymysql
 
@@ -14,14 +14,14 @@ if __name__ == '__main__':
         with cnx.cursor() as c:
             query = f"""
                     SELECT count(*)
-                    FROM {app_config.schema}.{app_config.cases_raw};
+                    FROM {db_config.schema}.{db_config.cases_raw};
                     """
 
             try:
                 c.execute(query)
                 count = c.fetchone()[0]
                 if count == 0:
-                    print(f'Expected {app_config.cases_raw}',
+                    print(f'Expected {db_config.cases_raw}',
                           'table to be populated,',
                           'found 0 records')
                     sys.exit(1)

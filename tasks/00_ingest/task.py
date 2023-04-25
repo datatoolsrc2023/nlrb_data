@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from common import app_config, sql, paths
+from common import db_config, sql, paths
 import ingest
 from os import listdir
 import petl as etl
@@ -33,7 +33,7 @@ def main():
         print(f'Processing {args.lines} lines of {csv}...')
         insert_tbl = ingest.clean_header(cases_tbl)
         try:
-            sql.petl_insert(insert_tbl, cnx, app_config.cases_raw)
+            sql.petl_insert(insert_tbl, cnx, db_config.cases_raw)
         except Exception as e:
             print(f'Error loading to DB: {e}')
             raise e

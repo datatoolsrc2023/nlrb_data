@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import app_config, sql
+from common import db_config, sql
 import sys
 import pymysql
 
@@ -17,13 +17,13 @@ if __name__ == '__main__':
             # Confirm cases table has rows
             query = f"""
                     SELECT count(*)
-                    FROM {app_config.schema}.{app_config.cases};
+                    FROM {db_config.schema}.{db_config.cases};
                     """
             try:
                 c.execute(query)
                 count = c.fetchone()[0]
                 if count == 0:
-                    print(f'Expected {app_config.cases} table'
+                    print(f'Expected {db_config.cases} table'
                           'to be populated,'
                           'but found 0 records')
                     error = True

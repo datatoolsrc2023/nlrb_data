@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import app_config, sql
+from common import db_config, sql
 import sys
 
 
@@ -15,12 +15,12 @@ if __name__ == '__main__':
         cnx.begin()
         with cnx.cursor() as c:
             try:
-                print(f'Creating {app_config.cases_raw} table...')
+                print(f'Creating {db_config.cases_raw} table...')
                 for statement in statements:
                     c.execute(statement)
                 cnx.commit()
             except Exception as e:
-                print(f'Failed to create table {app_config.cases_raw}: {e}')
+                print(f'Failed to create table {db_config.cases_raw}: {e}')
                 print('Rolling back')
                 cnx.rollback()
                 sys.exit(1)

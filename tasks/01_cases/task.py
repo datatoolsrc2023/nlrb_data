@@ -1,26 +1,30 @@
+#!/usr/bin/env python3
+
 def main():
     import cases
-    from common import app_config, sql
-    import petl as etl
+    from common import db_config, sql
+    import polars as pl
 
-    # get cases PETL table from deduped cases table
-    cnx = sql.db_cnx()
-    cases_query = f"""
-                  SELECT *
-                  FROM {app_config.schema}.{app_config.cases_raw_deduped};
-                  """
-    cases_tbl = etl.fromdb(cnx, cases_query)
+    # Read case data from cases_raw table
+    cnx_str = sql.db_cnx_str()
 
-    # set header for cases PETL table
-    # add extra columns, and clean data
-    clean_head = cases.clean_header(cases_tbl)
-    insert_tbl = cases.clean_data(clean_head)
+    query = f"""
+            SELECT *
+            FROM {db_config.schema}.{db_config.cases_raw};
+            """
 
-    # insert cleaned cases into DB
+    df = pl.read_database(query, cnx_str)
+
+    # Add extra columns, clean data, and deduplicate
+    # cases by case_number and date_filed
+    df = cases.clean_data(df)
+
+    # Insert cleaned cases into DB
     try:
-        sql.petl_insert(cnx, insert_tbl, app_config.cases)
+        print(f'Inserting cases data into {db_config.cases} table')
+        df.write_database(db_config.cases, cnx_str, if_exists='append')
     except Exception as e:
-        print(f'Error inserting into {app_config.cases}: {e}')
+        print(f'Error inserting into {db_config.cases}: {e}')
 
 
 if __name__ == '__main__':

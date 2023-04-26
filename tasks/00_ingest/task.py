@@ -33,7 +33,8 @@ def main():
         print(f'Processing {args.lines} lines of {csv}...')
         insert_tbl = ingest.clean_header(cases_tbl)
         try:
-            sql.petl_insert(insert_tbl, cnx, db_config.cases_raw)
+            sql.petl_insert(insert_tbl, cnx, db_config.schema,
+                            db_config.cases_raw)
         except Exception as e:
             print(f'Error loading to DB: {e}')
             raise e

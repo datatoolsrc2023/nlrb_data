@@ -22,11 +22,11 @@ def get_query_lines_from_file(filename: str) -> list[str]:
 def db_cnx(host=db_config.host,
            user=db_config.user,
            password=db_config.password,
-           database=db_config.database,
+           dbname=db_config.database,
            cursor_factory=psycopg2.extensions.cursor,
            **kwargs):
     return psycopg2.connect(user=user, host=host, password=password,
-                            database=database, cursor_factory=cursor_factory,
+                            dbname=dbname, cursor_factory=cursor_factory,
                             **kwargs)
 
 
@@ -39,7 +39,8 @@ def db_cnx_str(host: str = db_config.host,
 
 
 def petl_insert(cases_tbl: etl.Table,
-                cnx: psycopg2.Connection,
+                cnx,
+                schema: str,
                 tablename: str) -> None:
     """
     Takes a database connection object, a PETL table, and
@@ -47,8 +48,8 @@ def petl_insert(cases_tbl: etl.Table,
     If there are more than 0 rows in the DB table, appends rows
     to the existing table.
     """
-    result = etl.fromdb(cnx, f'SELECT count(*) from {tablename}')
-    db_count = list(etl.values(result, 'count(*)'))[0]
+    result = etl.fromdb(cnx, f'SELECT count(*) as c from {tablename}')
+    db_count = list(etl.values(result, 'c'))[0]
 
     if db_count > 0:
         print(f'Appending data to {tablename} table...')

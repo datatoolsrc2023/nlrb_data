@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS  cases  (
+CREATE TABLE IF NOT EXISTS  nlrb_data.cases  (
      id SERIAL PRIMARY KEY NOT NULL,
      case_type TEXT,
      region TEXT,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS  cases  (
      docket_activity_raw TEXT,
      union_name TEXT,
      unit_sought TEXT,
-     voters INT,
+     voters TEXT,
      allegations_parse_error BOOLEAN,
      participants_parse_error BOOLEAN,
      docket_activity_parse_error BOOLEAN

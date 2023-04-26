@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS allegations (
+CREATE TABLE IF NOT EXISTS nlrb_data.allegations (
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     case_id INT NOT NULL,
     code VARCHAR(16) NOT NULL,

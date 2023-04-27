@@ -13,8 +13,7 @@ if __name__ == '__main__':
     with sql.db_cnx() as cnx, cnx.cursor() as c:
         query = f"""
                 SELECT * FROM pg_tables
-                WHERE schemaname = 'public'
-                AND tablename = '{db_config.cases_raw}';
+                WHERE tablename = '{db_config.cases_raw}';
                 """
 
         try:

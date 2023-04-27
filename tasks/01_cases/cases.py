@@ -51,7 +51,7 @@ def clean_data(df: pl.DataFrame) -> pl.DataFrame:
          'participants_parse_error',
          'docket_activity_parse_error'
          ]).sort(by=['case_number', 'date_filed'], descending=True).\
-            unique(subset=['case_number', 'date_filed'],
+            unique(subset=['case_number'],
                     keep='first', maintain_order=True).collect()
 
     return df

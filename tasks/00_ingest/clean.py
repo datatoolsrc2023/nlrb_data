@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from common import db_config, sql
-import sys
 
 
 if __name__ == '__main__':
@@ -23,6 +22,6 @@ if __name__ == '__main__':
         raise
     else: # no exception
         cnx.commit()
-        print("dropped {db_config.cases_raw} table")
+        print(f"dropped {db_config.cases_raw} table")
     finally:
         cnx.close()

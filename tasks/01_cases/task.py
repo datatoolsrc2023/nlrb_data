@@ -30,12 +30,17 @@ def main():
     psql.Identifier(db_config.cases), columns, values
     )
 
-    with cnx, cnx.cursor() as c:
-        try:
-            print(f'Inserting rows into {db_config.cases} table')
-            psycopg2.extras.execute_batch(c, insert_stmt, df.rows())
-        except Exception as e:
-            print(f'Error inserting into {db_config.cases}: {e}')
+    c = cnx.cursor()
+    try:
+        print(f'attempting to insert rows into {db_config.cases} table')
+        psycopg2.extras.execute_batch(c, insert_stmt, df.rows())
+    except:
+        raise ValueError(f'Error inserting into {db_config.cases}')
+    else:
+        cnx.commit()
+        print('inserted rows into table')
+    finally:
+        cnx.close()
 
 
 if __name__ == '__main__':

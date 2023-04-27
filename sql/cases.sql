@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS  nlrb_data.cases  (
+CREATE TABLE IF NOT EXISTS  cases  (
      id SERIAL PRIMARY KEY NOT NULL,
      case_type TEXT,
      region TEXT,

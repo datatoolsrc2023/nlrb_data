@@ -3,10 +3,9 @@ host = 'localhost'
 user = 'nlrb'
 password = 'badpassword'
 database = 'nlrb_data'
-port = '3306'
+port = '5432'
 
-# schema name and commonly used database tables
-schema = 'nlrb_data'
+# commonly used database tables
 cases_raw = 'cases_raw'
 cases_raw_deduped = 'cases_raw_deduped'
 cases = 'cases'

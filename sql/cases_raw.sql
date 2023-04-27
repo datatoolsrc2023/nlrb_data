@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS nlrb_data.cases_raw (
+CREATE TABLE IF NOT EXISTS cases_raw (
     case_type TEXT,
     region TEXT,
     case_number TEXT,

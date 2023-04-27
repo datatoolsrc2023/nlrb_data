@@ -13,7 +13,7 @@ if __name__ == '__main__':
         with cnx.cursor() as c:
             query = f"""
                     DROP TABLE IF EXISTS
-                    {db_config.schema}.{db_config.cases}
+                    {db_config.cases}
                     """
             try:
                 print(f'Dropping {db_config.cases} table')

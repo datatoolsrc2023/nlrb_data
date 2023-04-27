@@ -16,7 +16,7 @@ if __name__ == '__main__':
             # Confirm cases table has rows
             query = f"""
                     SELECT count(*)
-                    FROM {db_config.schema}.{db_config.cases};
+                    FROM {db_config.cases};
                     """
             try:
                 c.execute(query)

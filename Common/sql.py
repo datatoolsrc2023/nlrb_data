@@ -35,12 +35,11 @@ def db_cnx_str(host: str = db_config.host,
                password: str = db_config.password,
                port: str = db_config.port,
                database: str = db_config.database) -> str:
-    return f'mysql://{user}:{password}@{host}:{port}/{database}'
+    return f'postgresql://{user}:{password}@{host}:{port}/{database}'
 
 
 def petl_insert(cases_tbl: etl.Table,
                 cnx,
-                schema: str,
                 tablename: str) -> None:
     """
     Takes a database connection object, a PETL table, and

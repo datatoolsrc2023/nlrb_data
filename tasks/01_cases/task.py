@@ -29,12 +29,12 @@ def main():
 
     c = cnx.cursor()
     try:
-        print(f'Attempting to insert rows into {db_config.cases} table')
-        psycopg2.extras.execute_batch(c, insert_stmt, df.rows())
-    except:
-        raise ValueError(f'Error inserting into {db_config.cases}')
+        with sql.db_cnx() as cnx, cnx.cursor() as c:
+            print(f'Attempting to insert rows into {db_config.cases} table')
+            psycopg2.extras.execute_batch(c, insert_stmt, df.rows())
+    except Exception as e:
+        raise Exception(f'Error inserting into {db_config.cases}') from e
     else:
-        cnx.commit()
         print(f'Inserted rows into {db_config.cases} table')
     finally:
         cnx.close()

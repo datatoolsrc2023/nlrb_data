@@ -9,9 +9,8 @@ def main():
 
     # Read case data from cases_raw table
     cnx_str = sql.db_cnx_str()
-    cnx = sql.db_cnx()
 
-    query = "SELECT * FROM cases_raw"
+    query = 'SELECT * FROM cases_raw'
 
     df = pl.read_database(query, cnx_str)
 
@@ -27,7 +26,6 @@ def main():
     psql.Identifier(db_config.cases), columns, values
     )
 
-    c = cnx.cursor()
     try:
         with sql.db_cnx() as cnx, cnx.cursor() as c:
             print(f'Attempting to insert rows into {db_config.cases} table')

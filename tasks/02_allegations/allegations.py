@@ -49,7 +49,7 @@ def process_allegations(cursor, case_row):
         #TODO We might be good to dispense with this part altogether...
         #TODO How do I ensure this worked?
         cursor.execute('UPDATE cases SET allegations_parse_error = %s WHERE id = %s;',
-                (0 if okay else 1, case_id))
+                (True if okay else False, case_id))
 
     except Exception as e:
         print(f'Error: {e}')

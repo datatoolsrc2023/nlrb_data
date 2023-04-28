@@ -6,22 +6,17 @@ from common import db_config, sql
 if __name__ == '__main__':
     """Ensure cases_raw table is created."""
 
-    count = 0
-    error = False
-
     statements = sql.get_query_lines_from_file('cases_raw.sql')
 
-    cnx = sql.db_cnx()
-    c = cnx.cursor()
     try:
-        print(f'attempting to create {db_config.cases_raw} table...')
-        for statement in statements:
-            c.execute(statement)
-    except:
-        print(f'Failed to create table {db_config.cases_raw}')
-        raise
+        with sql.db_cnx() as cnx, cnx.cursor() as c:
+            print(f'Attempting to create {db_config.cases_raw} table...')
+            for statement in statements:
+                c.execute(statement)
+    except Exception as e:
+        raise Exception(f'Failed to create table {db_config.cases_raw}') from e
     else: # no exception
-        cnx.commit()
+        print(f'Created {db_config.cases_raw} table')
     finally:
         cnx.close()
             

@@ -11,10 +11,7 @@ def main():
     cnx_str = sql.db_cnx_str()
     cnx = sql.db_cnx()
 
-    query = f"""
-            SELECT *
-            FROM {db_config.cases_raw}
-            """
+    query = "SELECT * FROM cases_raw"
 
     df = pl.read_database(query, cnx_str)
 
@@ -32,13 +29,13 @@ def main():
 
     c = cnx.cursor()
     try:
-        print(f'attempting to insert rows into {db_config.cases} table')
+        print(f'Attempting to insert rows into {db_config.cases} table')
         psycopg2.extras.execute_batch(c, insert_stmt, df.rows())
     except:
         raise ValueError(f'Error inserting into {db_config.cases}')
     else:
         cnx.commit()
-        print('inserted rows into table')
+        print(f'Inserted rows into {db_config.cases} table')
     finally:
         cnx.close()
 

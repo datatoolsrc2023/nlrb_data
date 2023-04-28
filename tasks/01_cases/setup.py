@@ -4,24 +4,19 @@ from common import db_config, sql
 
 
 def main():
-    cnx = sql.db_cnx()
-
     """Create cases table"""
 
-    cnx = sql.db_cnx()
-    c = cnx.cursor()
-
-    # Create cases table
     statements = sql.get_query_lines_from_file('cases.sql')
+
     try:
-        print(f'Creating {db_config.cases} table...')
-        for statement in statements:
-            c.execute(statement)
+        with sql.db_cnx() as cnx, cnx.cursor() as c:
+            print(f'Attempting to create {db_config.cases} table...')
+            for statement in statements:
+                c.execute(statement)
     except:
-        raise ValueError(f'Failed to create table '
-                         f'{db_config.cases}')
+        print(f'Failed to create {db_config.cases}')
     else:
-        cnx.commit()
+        print(f'Created {db_config.cases} table')
     finally:
         cnx.close()
 

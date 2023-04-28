@@ -1,27 +1,20 @@
 #!/usr/bin/env python3
 
 from common import db_config, sql
-import sys
 
 
 if __name__ == '__main__':
     """Drop cases table."""
 
-    cnx = sql.db_cnx()
+    query = 'DROP TABLE IF EXISTS cases'
 
-        # Drop cases table
-    c = cnx.cursor()
-    query = f"""
-            DROP TABLE IF EXISTS
-            {db_config.cases}
-            """
     try:
-        print(f'attempting to drop {db_config.cases} table')
-        c.execute(query)
-    except:
-        raise ValueError(f"Failed to drop {db_config.cases}")
+        with sql.db_cnx() as cnx, cnx.cursor() as c:
+            print(f'Attempting to drop {db_config.cases} table')
+            c.execute(query)
+    except Exception as e:
+        raise Exception(f'Failed to drop {db_config.cases} table') from e
     else: # no exception
-        cnx.commit()
-        print('dropped table')
+        print(f'Dropped {db_config.cases} table')
     finally:
         cnx.close()

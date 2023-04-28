@@ -6,22 +6,15 @@ from common import db_config, sql
 if __name__ == '__main__':
     """Drop cases_raw table"""
 
-    error = False
+    query = 'DROP TABLE IF EXISTS cases_raw'
 
-    cnx = sql.db_cnx()
-    c = cnx.cursor()
-    query = f"""
-            DROP TABLE IF EXISTS
-            {db_config.cases_raw}
-            """
     try:
-        print(f'attempting to drop {db_config.cases_raw} table')
-        c.execute(query)
-    except:
-        print("failed to drop table")
-        raise
+        with sql.db_cnx() as cnx, cnx.cursor() as c:
+            print(f'Attempting to drop {db_config.cases_raw} table')
+            c.execute(query)
+    except Exception as e:
+        raise Exception(f'Failed to drop {db_config.cases_raw} table') from e
     else: # no exception
-        cnx.commit()
-        print(f"dropped {db_config.cases_raw} table")
+        print(f'Dropped {db_config.cases_raw} table')
     finally:
         cnx.close()

@@ -18,6 +18,6 @@ if __name__ == '__main__':
     except Exception as e:
         raise Exception(f'Could not count rows in {db_config.cases} table') from e
     else: # no exception
-        print(f'{db_config.cases} table has rows')
+        print(f'Found {count} rows in  {db_config.cases}')
     finally:
         cnx.close()

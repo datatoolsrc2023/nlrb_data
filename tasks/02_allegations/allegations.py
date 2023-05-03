@@ -5,7 +5,7 @@ import re
 # '(?:\([A-Z]+\))?' is an optional non-matching group for the last (A)
 # Could also just do something like this:
 # '(\d(?:\([0-9a-zA-Z]+\))?) (.+)'
-pat = '(\d\([a-z]+\)\(\d+\)(?:\([A-Z]+\))?) (.+)'
+pat = '(\d\([a-z]+\)(?:\(\d+\))?(?:\([A-Z]+\))?) (.+)'
 pat = re.compile(pat)
 
 Row = namedtuple('Row', 'code desc parse_error raw')

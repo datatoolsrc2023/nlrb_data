@@ -1,39 +1,24 @@
 #!/usr/bin/env python3
 
-from common import db_config, Connection, sql
+from common import db_config, sql
 
-import sys
-
-import pymysql
+from psycopg2.extras import DictCursor 
 
 
 if __name__ == '__main__':
     """Ensure database is created as needed."""
 
-    error = False
-    count = 0
-
     statements = sql.get_query_lines_from_file('allegations.sql')
 
-    cnx = Connection(db_config)
-    cnx.begin()
-    c = cnx.cursor()
     try:
-        for statement in statements:
-            print(statement)
-            c.execute(statement)
-        print('Committing changes')
-        cnx.commit()
+        with sql.db_cnx(cursor_factory=DictCursor) as cnx, cnx.cursor() as c:
+            print(f'Attempting to create {db_config.allegations} table')
+            for statement in statements:
+                print(statement)
+                c.execute(statement)
     except Exception as e:
-        error = True
-        print(f'Failed to create table allegations: {e}')
-        print('Rolling back')
-        cnx.rollback()
-
-
-    # Clean up gracefully, then exit with error if needed
-    c.close()
-    cnx.close()
-
-    if error:
-        sys.exit(1)
+        raise Exception(f'Failed to create {db_config.allegations} table') from e
+    else:
+        print(f'Created {db_config.allegations} table')
+    finally:
+        cnx.close()

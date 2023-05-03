@@ -1,30 +1,24 @@
 #!/usr/bin/env python3
 
 from common import db_config, sql
-import sys
-import pymysql
 
 
 if __name__ == '__main__':
     """Confirm cases_raw table has rows."""
 
-    count = 0
+    query = 'SELECT count(*) FROM cases_raw'
 
-    with sql.db_cnx() as cnx:
-        with cnx.cursor() as c:
-            query = f"""
-                    SELECT count(*)
-                    FROM {db_config.schema}.{db_config.cases_raw};
-                    """
-
-            try:
-                c.execute(query)
-                count = c.fetchone()[0]
-                if count == 0:
-                    print(f'Expected {db_config.cases_raw}',
-                          'table to be populated,',
-                          'found 0 records')
-                    sys.exit(1)
-            except (pymysql.err.ProgrammingError,
-                    pymysql.err.OperationalError) as e:
-                print(f'Could not count cases: {e}')
+    try:
+        with sql.db_cnx() as cnx, cnx.cursor() as c:
+            c.execute(query)
+            count = c.fetchone()[0]
+            if count == 0:
+                raise Exception(f'Expected {db_config.cases_raw} table '
+                                'to be populated, but '
+                                 'found 0 records')     
+    except Exception as e:
+        raise Exception(f'Unable to count rows in {db_config.cases_raw} table') from e
+    else: # no exception
+        print(f'Found {count} rows in {db_config.cases_raw}')
+    finally:
+        cnx.close()

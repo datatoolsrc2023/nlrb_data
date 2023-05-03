@@ -1,39 +1,30 @@
 #!/usr/bin/env python3
 
-from common import Connection, db_config
+from common import db_config, sql
 
-import sys
-
-import pymysql
+from psycopg2.extras import DictCursor 
 
 
 if __name__ == '__main__':
     """Undo all changes this task might have made."""
 
-    error = False
-    count = 0
+    drop_query = 'DROP TABLE IF EXISTS allegations'
+    update_query = 'UPDATE cases SET allegations_parse_error = NULL'
 
-    cnx = Connection(db_config)
-    cnx.begin()
-    c = cnx.cursor()
     try:
-        c.execute("DROP TABLE IF EXISTS allegations;")
+        with sql.db_cnx(cursor_factory=DictCursor) as cnx, cnx.cursor() as c:
+            print(f'Attempting to drop {db_config.allegations} table '
+                  f'and reset allegations_parse_error in {db_config.cases} table to NULL')
+            c.execute(drop_query)
+            # changed = c.rowcount
+            c.execute(update_query)
+            changed = c.rowcount
     except Exception as e:
-        error = True
-        print(f"Failed to drop allegations: {e}")
-
-    try:
-        changed = c.execute('UPDATE cases SET allegations_parse_error = NULL;')
-        print(f'Reset allegations_parse_error = NULL for {changed} records')
-    except pymysql.err.ProgrammingError as e:
-        error = True
-        print(f'Failed to reset allegations_parse_error to NULL: {e}')
-
-    cnx.commit()
-
-    # Clean up gracefully, then exit with error if needed
-    c.close()
-    cnx.close()
-
-    if error:
-        sys.exit(1)
+        raise Exception(f'Failed to drop table and/or reset '
+                        f'allegations_parse_error in {db_config.cases} table') from e
+    else: # no exception
+        print(f'Dropped {db_config.allegations} table and '
+              f'reset allegations_parse_error = NULL in {db_config.cases} table '
+              f'for all {changed} case records')
+    finally:
+        cnx.close()

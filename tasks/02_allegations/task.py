@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
-from common import db_config, Connection
+from common import sql
 
 import allegations as alleg
+
+from psycopg2.extras import DictCursor
 
 def main():
     """Run the migration."""
@@ -16,22 +18,21 @@ def main():
     ;
     """
 
-    cnx = Connection(db_config)
-    cnx.begin()
+    # cnx = sql.db_cnx(cursor_factory=DictCursor)
     try:
-        c = cnx.dict_cursor()
-        n = c.execute(allegations_query)
-        print(f'Cases with allegations: {n}')
-        for row in c:
-            alleg.process_allegations(cnx.dict_cursor(), row)
-        cnx.commit()
-        print('Migration complete.')
+        with sql.db_cnx(cursor_factory=DictCursor) as cnx, cnx.cursor() as c:
+            c = cnx.cursor()
+            c.execute(allegations_query)
+            n = c.rowcount
+            print(f'Cases with allegations: {n}')
+            for row in c:
+                alleg.process_allegations(cnx.cursor(), row)
     except Exception as e:
         print(f'Error: {e}')
         print('Rolling back.')
-        cnx.rollback()
+    else: # no exception
+        print('Migration complete.')
     finally:
-        c.close()
         cnx.close()
 
 

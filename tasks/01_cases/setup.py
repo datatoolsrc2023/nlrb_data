@@ -1,31 +1,24 @@
 #!/usr/bin/env python3
 
 from common import db_config, sql
-import sys
 
 
 def main():
-    cnx = sql.db_cnx()
-
     """Create cases table"""
 
-    with sql.db_cnx() as cnx:
-        cnx.begin()
+    statements = sql.get_query_lines_from_file('cases.sql')
 
-        # Create cases table
-        with cnx.cursor() as c:
-            statements = sql.get_query_lines_from_file('cases.sql')
-            try:
-                print(f'Creating {db_config.cases} table...')
-                for statement in statements:
-                    c.execute(statement)
-                cnx.commit()
-            except Exception as e:
-                print(f'Failed to create table'
-                      f'{db_config.cases}: {e}')
-                print('Rolling back')
-                cnx.rollback()
-                sys.exit(1)
+    try:
+        with sql.db_cnx() as cnx, cnx.cursor() as c:
+            print(f'Attempting to create {db_config.cases} table...')
+            for statement in statements:
+                c.execute(statement)
+    except:
+        print(f'Failed to create {db_config.cases}')
+    else:
+        print(f'Created {db_config.cases} table')
+    finally:
+        cnx.close()
 
 
 if __name__ == '__main__':

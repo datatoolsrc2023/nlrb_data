@@ -5,7 +5,7 @@ import re
 # '(?:\([A-Z]+\))?' is an optional non-matching group for the last (A)
 # Could also just do something like this:
 # '(\d(?:\([0-9a-zA-Z]+\))?) (.+)'
-pat = '(\d\([a-z]+\)\(\d+\)(?:\([A-Z]+\))?) (.+)'
+pat = '(\d\([a-z]+\)(?:\(\d+\))?(?:\([A-Z]+\))?) (.+)'
 pat = re.compile(pat)
 
 Row = namedtuple('Row', 'code desc parse_error raw')
@@ -49,7 +49,7 @@ def process_allegations(cursor, case_row):
         #TODO We might be good to dispense with this part altogether...
         #TODO How do I ensure this worked?
         cursor.execute('UPDATE cases SET allegations_parse_error = %s WHERE id = %s;',
-                (0 if okay else 1, case_id))
+                (False if okay else True, case_id))
 
     except Exception as e:
         print(f'Error: {e}')

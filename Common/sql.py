@@ -1,7 +1,7 @@
 from . import paths
 import Common.db_config as db_config
 import petl as etl
-import pymysql
+import psycopg2
 
 
 def get_query_lines_from_file(filename: str) -> list[str]:
@@ -19,15 +19,15 @@ def get_query_lines_from_file(filename: str) -> list[str]:
     return list(statements)
 
 
-def db_cnx(host: str = db_config.host,
-           user: str = db_config.user,
-           password: str = db_config.password,
-           database: str = db_config.database,
-           sql_mode: str = db_config.sql_mode,
-           cursorclass=pymysql.cursors.Cursor) -> pymysql.Connection:
-    return pymysql.connect(user=user, host=host, password=password,
-                           database=database, sql_mode=sql_mode,
-                           cursorclass=cursorclass)
+def db_cnx(host=db_config.host,
+           user=db_config.user,
+           password=db_config.password,
+           dbname=db_config.database,
+           cursor_factory=psycopg2.extensions.cursor,
+           **kwargs):
+    return psycopg2.connect(user=user, host=host, password=password,
+                            dbname=dbname, cursor_factory=cursor_factory,
+                            **kwargs)
 
 
 def db_cnx_str(host: str = db_config.host,
@@ -35,11 +35,11 @@ def db_cnx_str(host: str = db_config.host,
                password: str = db_config.password,
                port: str = db_config.port,
                database: str = db_config.database) -> str:
-    return f'mysql://{user}:{password}@{host}:{port}/{database}'
+    return f'postgresql://{user}:{password}@{host}:{port}/{database}'
 
 
 def petl_insert(cases_tbl: etl.Table,
-                cnx: pymysql.Connection,
+                cnx,
                 tablename: str) -> None:
     """
     Takes a database connection object, a PETL table, and
@@ -47,8 +47,8 @@ def petl_insert(cases_tbl: etl.Table,
     If there are more than 0 rows in the DB table, appends rows
     to the existing table.
     """
-    result = etl.fromdb(cnx, f'SELECT count(*) from {tablename}')
-    db_count = list(etl.values(result, 'count(*)'))[0]
+    result = etl.fromdb(cnx, f'SELECT count(*) as c from {tablename}')
+    db_count = list(etl.values(result, 'c'))[0]
 
     if db_count > 0:
         print(f'Appending data to {tablename} table...')

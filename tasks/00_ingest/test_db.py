@@ -1,29 +1,24 @@
 #!/usr/bin/env python3
 
 from common import db_config, sql
-import sys
-import pymysql
 
 
 if __name__ == '__main__':
-    """Confirm cases_raw table has rows"""
+    """Confirm cases_raw table exists"""
 
-    count = 0
+    query = f"""
+            SELECT * FROM pg_tables
+            WHERE tablename = 'cases_raw';
+            """
 
-    with sql.db_cnx() as cnx:
-        with cnx.cursor() as c:
-            query = f"""
-                    SELECT table_name from information_schema.tables\
-                    WHERE table_schema = '{db_config.schema}'\
-                    AND table_name = '{db_config.cases_raw}';
-                    """
-
-            try:
-                result = c.execute(query)
-                if result == 0:
-                    print(f'Expected {db_config.cases_raw} to have rows,',
-                          'but found 0 rows')
-                    sys.exit(1)
-            except pymysql.err.ProgrammingError as e:
-                print('Could not test for existence of ',
-                      f'{db_config.cases_raw} table: {e}')
+    try:
+        with sql.db_cnx() as cnx, cnx.cursor() as c:
+            c.execute(query)
+            if not c.fetchone():
+                raise Exception(f'{db_config.cases_raw} table does not exist')
+    except Exception as e:
+        raise Exception(f'Could not test for existence of {db_config.cases_raw}') from e
+    else: # no exception
+        print(f'{db_config.cases_raw} table exists')
+    finally:
+        cnx.close()

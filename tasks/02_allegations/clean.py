@@ -15,14 +15,16 @@ if __name__ == '__main__':
         with sql.db_cnx(cursor_factory=DictCursor) as cnx, cnx.cursor() as c:
             print(f'Attempting to drop {db_config.allegations} table '
                   f'and reset allegations_parse_error in {db_config.cases} table to NULL')
-            changed = c.execute(drop_query)
+            c.execute(drop_query)
+            # changed = c.rowcount
             c.execute(update_query)
+            changed = c.rowcount
     except Exception as e:
         raise Exception(f'Failed to drop table and/or reset '
                         f'allegations_parse_error in {db_config.cases} table') from e
     else: # no exception
         print(f'Dropped {db_config.allegations} table and '
               f'reset allegations_parse_error = NULL in {db_config.cases} table '
-              f'for {changed} records')
+              f'for all {changed} case records')
     finally:
         cnx.close()

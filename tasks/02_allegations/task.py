@@ -18,22 +18,21 @@ def main():
     ;
     """
 
-    cnx = sql.db_cnx(cursor_factory=DictCursor)
+    # cnx = sql.db_cnx(cursor_factory=DictCursor)
     try:
-        c = cnx.cursor()
-        n = c.execute(allegations_query)
-        print(f'Cases with allegations: {n}')
-        for row in c:
-            print(c)
-            alleg.process_allegations(cnx.cursor(), row)
-        cnx.commit()
-        print('Migration complete.')
+        with sql.db_cnx(cursor_factory=DictCursor) as cnx, cnx.cursor() as c:
+            c = cnx.cursor()
+            c.execute(allegations_query)
+            n = c.rowcount
+            print(f'Cases with allegations: {n}')
+            for row in c:
+                alleg.process_allegations(cnx.cursor(), row)
     except Exception as e:
         print(f'Error: {e}')
         print('Rolling back.')
-        cnx.rollback()
+    else: # no exception
+        print('Migration complete.')
     finally:
-        c.close()
         cnx.close()
 
 

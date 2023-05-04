@@ -16,7 +16,6 @@ if __name__ == '__main__':
             print(f'Attempting to drop {db_config.allegations} table '
                   f'and reset allegations_parse_error in {db_config.cases} table to NULL')
             c.execute(drop_query)
-            # changed = c.rowcount
             c.execute(update_query)
             changed = c.rowcount
     except Exception as e:

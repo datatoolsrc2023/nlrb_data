@@ -45,7 +45,7 @@ def db_cnx_str(db_type=db_config.db_type,
                password: str = db_config.password,
                port: str = db_config.port,
                database: str = db_config.database) -> str:
-    if db_type == 'sqlite3':
+    if db_type == 'sqlite':
         return f'sqlite://{sqlite_file}'
     elif db_type == 'postgresql':
         return f'postgresql://{user}:{password}@{host}:{port}/{database}'

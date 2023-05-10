@@ -6,7 +6,7 @@ from common import db_config, sql
 if __name__ == '__main__':
     """Confirm cases_raw table exists"""
 
-    if db_config.db_type == 'sqlite3':
+    if db_config.db_type == 'sqlite':
         query = f"""
                 SELECT name FROM sqlite_master
                 WHERE type='table'

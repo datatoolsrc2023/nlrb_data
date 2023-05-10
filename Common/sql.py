@@ -28,7 +28,7 @@ def db_cnx(db_type=db_config.db_type,
            dbname=db_config.database,
            cursor_factory=psycopg2.extensions.cursor,
            **kwargs):
-    if db_type == 'sqlite3':
+    if db_type == 'sqlite':
         return sqlite3.connect(sqlite_file)
     elif db_type == 'postgresql':
         return psycopg2.connect(user=user, host=host, password=password,

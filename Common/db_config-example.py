@@ -2,7 +2,7 @@ from . import paths
 
 # general db connection variables
 # can be set to postgresql or sqlite3
-db_type = 'postgresql'
+db_type = 'sqlite'
 
 # postgresql connection variables
 host = 'localhost'

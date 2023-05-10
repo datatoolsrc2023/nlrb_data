@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS cases (
+     id INTEGER PRIMARY KEY NOT NULL,
+     case_type TEXT,
+     region TEXT,
+     case_number TEXT UNIQUE NOT NULL,
+     case_name TEXT,
+     case_status TEXT,
+     date_filed DATE,
+     date_closed DATE,
+     reason_closed TEXT,
+     city TEXT,
+     states_and_territories TEXT,
+     employees_involved TEXT,
+     allegations_raw TEXT,
+     participants_raw TEXT,
+     docket_activity_raw TEXT,
+     union_name TEXT,
+     unit_sought TEXT,
+     voters TEXT,
+     allegations_parse_error TINYINT,
+     participants_parse_error TINYINT,
+     docket_activity_parse_error TINYINT
+);

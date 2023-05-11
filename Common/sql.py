@@ -2,6 +2,7 @@ from . import paths
 import Common.db_config as db_config
 import petl as etl
 import psycopg2
+from psycopg2.extras import DictCursor
 import sqlite3
 
 
@@ -26,7 +27,7 @@ def db_cnx(db_type=db_config.db_type,
            user=db_config.user,
            password=db_config.password,
            dbname=db_config.database,
-           cursor_factory=psycopg2.extensions.cursor,
+           cursor_factory=DictCursor,
            **kwargs):
     if db_type == 'sqlite':
         return sqlite3.connect(sqlite_file)

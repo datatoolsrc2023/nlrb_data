@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS allegations (
-    id SERIAL PRIMARY KEY NOT NULL,
+    id INTEGER PRIMARY KEY NOT NULL,
     case_id INT NOT NULL,
     code TEXT NOT NULL,
     description TEXT NOT NULL,

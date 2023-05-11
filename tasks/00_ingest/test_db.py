@@ -21,6 +21,7 @@ if __name__ == '__main__':
     try:
         with sql.db_cnx() as cnx:
             c = cnx.cursor()
+            print(f'Testing for existence of {db_config.cases_raw} table...')
             c.execute(query)
     except Exception as e:
         raise Exception(f'Could not test for existence of {db_config.cases_raw}') from e

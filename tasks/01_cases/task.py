@@ -23,7 +23,7 @@ def main():
     try:
         with sql.db_cnx() as cnx:
             c = cnx.cursor()
-            print(f'Attempting to insert rows into {db_config.cases} table')
+            print(f'Attempting to insert rows into {db_config.cases} table...')
             if db_config.db_type == 'sqlite':
                 columns = ','.join(name for name in df.columns)
                 placeholders = ','.join(['?' for _ in df.columns])

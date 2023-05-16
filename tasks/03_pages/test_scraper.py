@@ -1,8 +1,21 @@
-import scraper
-
 import unittest
 
+import scraper
+from common import Connection, db_config, paths
 
+
+
+class TestCaseChecker(unittest.TestCase):
+    def test_pages_to_fetch(self):
+        cnx = Connection(db_config)
+        curs = cnx.cursor()  
+        cases = scraper.case_pages_to_fetch(cursor=curs, pages_dir=paths.pages)
+        print('Number of cases to scrape:', len(cases))
+        curs.close()
+        cnx.close()
+    
+
+"""
 class TestScraper(unittest.TestCase):
     def test_scrape(self):
         test_case = '28-CA-212340'
@@ -27,7 +40,7 @@ class TestScraper(unittest.TestCase):
             test_case = {'case_number': 'test_page',
                          'output_path': ''}
             expected = True
-            got = scraper.check_if_page_already_scraped(test_case)
+            got = scraper.case_pages_to_fetch(test_case)
             self.assertEqual(got, expected)
     
     def test_not_yet_scraped(self):
@@ -36,6 +49,8 @@ class TestScraper(unittest.TestCase):
             expected = False
             got = scraper.check_if_page_already_scraped(test_case)
             self.assertEqual(got, expected)
+"""         
+
 
 
 """

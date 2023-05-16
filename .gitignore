@@ -9,4 +9,12 @@ db_config.py
 __pycache__/
 
 # database csvs
-casefiles/c_*.csv
+case_files/c_*.csv
+data/case_files/c_*.csv
+
+# too-large page scrapes
+data/page_files
+data/pages_html.tar.gz
+
+#.vscode stuff
+.vscode

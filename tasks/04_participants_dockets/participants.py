@@ -29,6 +29,9 @@ def parse_participants_str(html_str: str) -> list:
     return participants
 
 
+# def find_docket_link(html_str:str) -> str:
+  
+
 
 def read_tables(html_file_location: str) -> str:
     with open(html_file_location, 'r', encoding='utf-8') as html_file:
@@ -42,17 +45,19 @@ def read_tables(html_file_location: str) -> str:
     return (docket_df, participants_df)
 
 
+     
+
 current_pages = listdir(paths.pages)
-print(current_pages[4])
-docket, participants = read_tables(html_file_location = str(paths.pages / current_pages[4]))
+testing_page_path, testing_case_number = current_pages[4], current_pages[4].split('.html')[0]
 
-print(docket.columns)
-print(docket['Issued/Filed  By'].tolist())
-print(docket['Date'].tolist())
-docket['Date'] = pd.to_datetime(docket['Date'], format='%m/%d/%Y')
-docket['Date'] = [datetime.datetime.strftime(x, format='%Y-%m-%d') for x in docket['Date']]
-print(docket['Date'].tolist())
+for page in current_pages[:5]:
+    docket, participants = read_tables(html_file_location = str(paths.pages / testing_page_path))
 
+    docket['Date'] = pd.to_datetime(docket['Date'], format='%m/%d/%Y')
+    docket['Date'] = [datetime.datetime.strftime(x, format='%Y-%m-%d') for x in docket['Date']]
+    docket['case_number'] = testing_case_number
+    print(docket.head())
+    
 
 
 #print(participants.columns)

@@ -15,7 +15,9 @@ if __name__ == '__main__':
 
     cnx = Connection(db_config)
     c = cnx.cursor()
+
     try:
+        # ensure the cases table is already populated
         c.execute("SELECT COUNT(*) c FROM cases;")
         count = c.fetchone()[0]
         print(count)
@@ -26,14 +28,10 @@ if __name__ == '__main__':
         print(f'Could not count cases: {e}')
 
     try:
-        c.execute("SELECT COUNT(*) c FROM pages;")
-        count = c.fetchone()[0]
-        if count != 0:
-            error = True
-            print(f"Expected 0 participants, found {count}")
+        # check if the `pages` table exists; can be populated or not
+        c.execute("SELECT COUNT(*) FROM pages;")
     except pymysql.err.ProgrammingError as e:
         print(f'Could not count cases: {e}')
-
 
     c.close()
     cnx.close()

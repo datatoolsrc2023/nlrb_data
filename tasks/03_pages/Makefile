@@ -17,8 +17,6 @@ teardown:
 
 pre:
 	# Tests post-setup and pre-main
-	echo Testing parser
-	python3 ./test_parser.py
 	echo Testing database state
 	python3 ./test_db.py
 

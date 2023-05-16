@@ -1,115 +1,126 @@
-import requests
-from common import paths, Connection, db_config
-from collections import namedtuple
+import logging
 import pymysql
-from os import listdir
+import requests
+import time
+
+from bs4 import BeautifulSoup as bs
 from pathlib import Path
 
+from common import paths, Connection, db_config
 
 
-def case_pages_to_fetch(cursor):
-    
-    e = None
+def case_pages_to_fetch(cursor: Connection.cursor) -> list:
     try:
-        cursor.execute("SELECT id, case_number FROM cases;")
-        cases_case_numbers = [x for x in cursor.fetchall()]
+        # use a join to find all case ids from `cases` table
+        # that are not yet in the scraped `pages` table
+        cursor.execute(
+            """
+            SELECT t1.id, t1.case_number
+            FROM cases t1
+                LEFT JOIN pages t2 ON t1.id = t2.case_id
+                WHERE t2.case_id IS NULL;
+            """)
         
-        cursor.execute("SELECT case_id, case_number FROM pages;")
-        pages_case_numbers = [x for x in cursor.fetchall()]
-
-        print('case #s:', len(cases_case_numbers), 'page #s:', len(pages_case_numbers))
-
-        case_numbers_to_search = set(cases_case_numbers) - set(pages_case_numbers)
-        print('to search:', len(case_numbers_to_search))
-
-        
-        
-        return list(case_numbers_to_search)
+        # return a list of all case ids and numbers
+        return [x for x in cursor.fetchall()]
         
     except pymysql.err.ProgrammingError as e:
-        print("Gather from cases table! {e}")
-       
+        print("Error gathering case numbers from tables: {e}")
         return []
 
-def check_if_page_already_scraped(case_number: str, output_path: str = paths.pages) -> bool:
-    extant_pages = listdir(output_path)
-    if f"{case_number}.html" in extant_pages:
-        return True
-    else:
-        return False
 
-
-def check_if_scraped_info_in_db(cursor, case_number: str):
-    exeception = None
-    try:
-        cursor.execute('SELECT COUNT(*) FROM pages WHERE case_number = %s;', 
-                       (case_number,))
-        count = cursor.fetchone()[0]
-        print(count)
-        if count == 0:
-            return False
-        else:
-            return True
-    except pymysql.err.ProgrammingError as exception:
-        print('Check if scraped info in db! {exception}')
-
-
-def fetch_case_page(case_number: str, output_path: Path = paths.pages) -> tuple():
-    fetch_error = False
-    
-    try:
-        case_response = requests.get(f'https://www.nlrb.gov/case/{case_number}')
-    
-    except Exception as e:
-        print(f'Error: {e}')
-        fetch_error = True
-    
-    fetched = {
-        'case_number': case_number, 
-        'fetch_error': fetch_error,
-        'response': case_response,
-     }
-
-    return fetched
-
-
-def write_case_page(case_number: str, raw_page: str, output_path: Path = paths.pages) -> tuple():
-    write_error = False
-    
-    output_path = output_path / f"{case_number}.html"
-    
-    try:
-        with open(output_path, 'w', encoding='utf-8') as file:
-            file.write(raw_page.text)
-    
-    except Exception as e:
-        print(f'Error: {e}')
-        write_error=True
-    
-    written = {'case_number': case_number, 
-               'write_error': write_error,}
-
-    return written
-
-
-
-def add_to_pages_table(cursor, 
+def add_to_pages_table(cursor: Connection.cursor, 
                        case_id: int, 
-                       case_number: str, 
-                       fetch_error: bool, 
-                       write_error: bool):
+                       case_number: str,
+                       error: bool,
+                       raw_text: str):
     
+    # insert relevant info to pages table in the db
     try:
-        cursor.execute('''INSERT INTO pages (case_id, case_number, fetch_error, write_error)
+        cursor.execute('''INSERT INTO pages (case_id, case_number, error, raw_text)
                               VALUES (%s, %s, %s, %s);
                               ''',
-                              (case_id, case_number, fetch_error, write_error)
+                              (int(case_id), case_number, error, raw_text)
         )        
-        
     except pymysql.err.Error as e:
         print(f'Error: {e}')
     
-        
-      
-cnx = Connection(db_config)
-curs = cnx.cursor() 
+    return
+
+
+
+def threaded_scraper(case_and_case_number: tuple,
+                     output_dir: Path = paths.pages,
+                     cnx: Connection = Connection(db_config)):
+    # scraper doesn't necessarily need to be run in threads
+    
+    
+    # get some useful variables from the inputs
+    case_id, case_number = case_and_case_number
+    output_path = Path(output_dir/f"{case_id}_{case_number}.html")
+    
+    # check if the page has already been scraped
+    # will be able to refactor this out into the earlier case number gathering step
+    # once get the logging read and db pages table updated
+    if output_path.is_file() is True:
+        return
+
+    # keep track of time
+    t1 = time.time()    
+
+    # set up cursor to DB, will close 
+    curs = cnx.cursor()
+
+    # try to scrape a page. 
+    try:
+        case_response = requests.get(f'https://www.nlrb.gov/case/{case_number}')
+        case_response.raise_for_status()
+    
+    # if you get an error, log it, add error to `pages` table, return out of scraper
+    except requests.exceptions.HTTPError as e:
+        print(f'Error: {e}, case: {case_number}')
+        logging.warning(f'{case_id}, {case_number}, fetch error: {e}')
+        add_to_pages_table(cursor=curs, 
+                           case_id=case_id, 
+                           case_number=case_number,
+                           error=True,
+                           raw_text=False)
+        curs.close()
+        cnx.commit()
+        cnx.close()
+        return
+
+    # then try to parse the requests respose, write relevant `<article>` section to an `.html` file
+    try:
+        soup = bs(case_response.text, 'lxml')
+        with open(output_path, 'w', encoding='utf-8') as file:
+            file.write(soup.article.prettify())
+            add_to_pages_table(cursor=curs, 
+                           case_id=case_id, 
+                           case_number=case_number,
+                           error=False,
+                           raw_text=soup.article.prettify())
+    
+    # if you get an error, log it, add error to `pages` table, return out of scraper
+    except Exception as e:
+        print(f'Error: {e}, case: {case_number}')
+        logging.warning(f'{case_id}, {case_number}, write error:{e}')
+        add_to_pages_table(cursor=curs, 
+                           case_id=case_id, 
+                           case_number=case_number,
+                           error=True,
+                           raw_text=False)
+        curs.close()
+        cnx.commit()
+        cnx.close()
+        return
+
+    # then commit the page to  to the db and record in log    
+    t2 = time.time()
+    logging.info(f'{case_id}, {case_number}, time_elapsed: {round(t2-t1, 3)}')
+    
+    # commit and close
+    curs.close()
+    cnx.commit()
+    cnx.close()
+

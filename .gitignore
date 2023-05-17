@@ -1,28 +1,15 @@
-db_config.py
+# virtual environment
 venv/
 nlrb_env/
 __pycache__/
+.python-version
 .DS_Store
 .vscode
 *.csv
 
-# virtual environment
-venv/
-
 # database configuration info
 db_config.py
-
-# python miscellany
-.python-version
-__pycache__/
-
-# database csvs
-case_files/c_*.csv
-data/case_files/c_*.csv
 
 # too-large page scrapes
 data/page_files
 data/pages_html.tar.gz
-
-#.vscode stuff
-.vscode

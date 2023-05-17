@@ -1,3 +1,5 @@
+beautifulsoup4==4.12.2
+certifi==2022.12.7
 cffi==1.15.1
 connectorx==0.3.2a5
 cryptography==40.0.1

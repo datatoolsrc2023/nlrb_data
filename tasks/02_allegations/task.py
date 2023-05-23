@@ -4,7 +4,8 @@ from common import db_config, sql
 
 import allegations as alleg
 
-import sqlite3
+if db_config.db_type == 'sqlite':
+    import sqlite3
 
 
 def main():
@@ -41,6 +42,7 @@ def main():
         for row in result:
             alleg.process_allegations(cnx.cursor(), row)
 
+        cnx.commit()
         print('Migration complete.')
     finally:
         c.close()

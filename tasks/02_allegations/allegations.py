@@ -63,7 +63,6 @@ def process_allegations(cursor, case_row):
             query = 'UPDATE cases SET allegations_parse_error = %s WHERE id = %s;'
 
         cursor.execute(query, (False if okay else True, case_id))
-
     except Exception as e:
         print(f'Error: {e}')
         exc = e

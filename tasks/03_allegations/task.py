@@ -12,11 +12,21 @@ def main():
     """Run the migration."""
 
     allegations_query = """
-    SELECT id, case_number, allegations_raw
-    FROM cases
+    SELECT c.id, case_number, allegations_raw, allegations_parse_error
+    FROM cases c
+    INNER JOIN error_log e
+    ON c.id = e.case_id
     WHERE allegations_raw IS NOT NULL
     AND allegations_raw <> ''
     AND allegations_parse_error IS NULL
+    ;
+    """
+
+    error_log_query = """
+    UPDATE error_log e
+    SET allegations_parse_error = parse_error
+    FROM allegations a
+    WHERE e.case_id = a.case_id
     ;
     """
 
@@ -28,7 +38,6 @@ def main():
             c.execute(allegations_query)
     except Exception as e:
         print(f'Error: {e}')
-        print('Rolling back.')
     else: # no exception
         if db_config.db_type == 'sqlite':
             result = c.fetchall()
@@ -44,6 +53,23 @@ def main():
 
         cnx.commit()
         print('Migration complete.')
+    finally:
+        c.close()
+        cnx.close()
+
+    # update error_log.allegations_parse_error
+    # with values from allegations.parse_error
+    try:
+        with sql.db_cnx() as cnx:
+            c = cnx.cursor()
+            print(f'Attempting to update {db_config.error_log} table...')
+            c.execute(error_log_query)
+    except Exception as e:
+        cnx.rollback()
+        raise Exception(f'Unable to update {db_config.error_log} table') from e
+    else: # no exception
+        cnx.commit()
+        print(f'Updated {db_config.error_log} table')
     finally:
         c.close()
         cnx.close()

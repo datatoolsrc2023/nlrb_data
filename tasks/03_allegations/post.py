@@ -9,13 +9,14 @@ from psycopg2.extras import DictCursor
 if __name__ == '__main__':
     """Confirm no records require attention."""
 
-    count_query = 'SELECT COUNT(*) c FROM allegations WHERE parse_error is TRUE'
+    count_query = 'SELECT COUNT(*) c FROM error_log WHERE allegations_parse_error is TRUE'
     text_query = '''
-                SELECT c.case_number, a.raw_text
+                SELECT c.case_number, a.raw_text, e.allegations_parse_error
                 FROM cases c
                 INNER JOIN allegations a
-                ON c.id = a.case_id
-                WHERE a.parse_error is TRUE
+                INNER JOIN error_log e
+                ON c.id = a.case_id = e.case_id
+                WHERE e.allegations_parse_error is TRUE
                 '''
 
     try:

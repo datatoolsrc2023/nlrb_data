@@ -36,11 +36,9 @@ def process_allegations(cursor, case_row):
     exc = None
 
     try:
-        okay = True
         for r in parse_lines(raw):
             if r.parse_error:
                 print(f'\tERROR CASE({case_row["case_number"]}): {r.raw}')
-                okay = False
             
             if db_config.db_type == 'sqlite':
                 query = '''INSERT INTO allegations
@@ -55,14 +53,6 @@ def process_allegations(cursor, case_row):
 
             cursor.execute(query, (case_id, r.code, r.desc, r.parse_error, r.raw))
 
-        #TODO We might be good to dispense with this part altogether...
-        #TODO How do I ensure this worked?
-        if db_config.db_type == 'sqlite':
-            query = 'UPDATE cases SET allegations_parse_error = ? WHERE id = ?;'
-        elif db_config.db_type == 'postgresql':
-            query = 'UPDATE cases SET allegations_parse_error = %s WHERE id = %s;'
-
-        cursor.execute(query, (False if okay else True, case_id))
     except Exception as e:
         print(f'Error: {e}')
         exc = e
@@ -70,4 +60,3 @@ def process_allegations(cursor, case_row):
         cursor.close()
         if exc is not None:
             raise(exc)
-

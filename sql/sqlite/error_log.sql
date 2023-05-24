@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS error_log (
-    id SERIAL PRIMARY KEY NOT NULL,
+    id INTEGER PRIMARY KEY NOT NULL,
     case_id INT NOT NULL,
     allegations_parse_error TINYINT,
     participants_parse_error TINYINT,

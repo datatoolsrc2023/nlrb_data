@@ -11,13 +11,9 @@ __pycache__/
 db_config.py
 
 # too-large page scrapes
-data/case_files/*.csv
-data/case_files/*.zip
-data/case_files/__MACOSX
-
-data/page_files
-data/*.tar.gz*
+data/page_files/*.html
+data/extant_data
 
 # scraping log and backup postgresql dump
-tasks/03_pages/scrape.log
+tasks/03_pages/*.log
 tasks/03_pages/nlrb_dump

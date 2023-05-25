@@ -11,6 +11,10 @@ __pycache__/
 db_config.py
 
 # too-large page scrapes
+data/case_files/*.csv
+data/case_files/*.zip
+data/case_files/__MACOSX
+
 data/page_files
 data/*.tar.gz*
 

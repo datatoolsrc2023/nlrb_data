@@ -6,7 +6,7 @@ from common import db_config, sql
 if __name__ == '__main__':
     """Drop cases table."""
 
-    query = 'DROP TABLE IF EXISTS cases'
+    query = 'DROP TABLE IF EXISTS cases CASCADE'
 
     try:
         with sql.db_cnx() as cnx, cnx.cursor() as c:

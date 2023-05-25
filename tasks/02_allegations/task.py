@@ -5,6 +5,7 @@ from common import sql
 import allegations as alleg
 
 from psycopg2.extras import DictCursor
+from tqdm import tqdm
 
 def main():
     """Run the migration."""
@@ -25,7 +26,7 @@ def main():
             c.execute(allegations_query)
             n = c.rowcount
             print(f'Cases with allegations: {n}')
-            for row in c:
+            for row in tqdm(c):
                 alleg.process_allegations(cnx.cursor(), row)
     except Exception as e:
         print(f'Error: {e}')

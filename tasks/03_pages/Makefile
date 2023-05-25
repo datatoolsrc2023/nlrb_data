@@ -1,29 +1,27 @@
 SHELL := /bin/bash
 
-all: setup pre task post teardown
+all: clean setup pre task post
 
 clean:
-	# Undo everything related to the task. Called manually.
+	# make clean
+	# Remove empty .html files from scraped pages data
+	find ../../data/page_files -size 0 -delete
 	python3 ./clean.py
 
 setup:
-	# Anything that needs to be set up for this specific task
+	# make setup
 	which python3
 	python3 ./setup.py
 
-teardown:
-	# Anything that needs to be unset every time
-	echo Teardown
-
 pre:
-	# Tests post-setup and pre-main
-	echo Testing database state
+	# make pre
 	python3 ./test_db.py
 
 task:
+	# make task
 	python3 ./task.py
 
 
 post:
-	# Tests post-main and pre-teardown
+	# make post
 	python3 ./post.py

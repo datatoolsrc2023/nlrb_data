@@ -12,4 +12,8 @@ db_config.py
 
 # too-large page scrapes
 data/page_files
-data/pages_html.tar.gz
+data/*.tar.gz*
+
+# scraping log and backup postgresql dump
+tasks/03_pages/scrape.log
+tasks/03_pages/nlrb_dump

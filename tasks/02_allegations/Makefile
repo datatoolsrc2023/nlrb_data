@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-all: setup pre task post teardown
+all: clean setup pre task post teardown
 
 clean:
 	# Undo everything related to the task. Called manually.

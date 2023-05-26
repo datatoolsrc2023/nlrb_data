@@ -14,7 +14,8 @@ if __name__ == '__main__':
             print(f'Attempting to count rows in {db_config.cases_raw} table...')
             c.execute(query)   
     except Exception as e:
-        raise Exception(f'Unable to count rows in {db_config.cases_raw} table') from e
+        print(f'Unable to count rows in {db_config.cases_raw} table')
+        raise e
     else: # no exception
         count = c.fetchone()[0]
         if count == 0:

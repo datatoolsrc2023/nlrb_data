@@ -24,7 +24,8 @@ if __name__ == '__main__':
             print(f'Testing for existence of {db_config.cases_raw} table...')
             c.execute(query)
     except Exception as e:
-        raise Exception(f'Could not test for existence of {db_config.cases_raw}') from e
+        print(f'Could not test for existence of {db_config.cases_raw}')
+        raise e
     else: # no exception
         if not c.fetchone():
             raise Exception(f'{db_config.cases_raw} table does not exist')

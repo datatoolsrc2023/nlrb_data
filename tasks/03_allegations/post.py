@@ -11,11 +11,12 @@ if __name__ == '__main__':
 
     count_query = 'SELECT COUNT(*) c FROM error_log WHERE allegations_parse_error is TRUE'
     text_query = '''
-                SELECT c.case_number, a.raw_text, e.allegations_parse_error
+                SELECT c.case_number, a.raw_text
                 FROM cases c
                 INNER JOIN allegations a
+                ON c.id = a.case_id
                 INNER JOIN error_log e
-                ON c.id = a.case_id = e.case_id
+                on c.id = e.case_id
                 WHERE e.allegations_parse_error is TRUE
                 '''
 

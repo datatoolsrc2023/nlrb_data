@@ -17,8 +17,9 @@ if __name__ == '__main__':
             c.execute(drop_query)
             c.execute(update_query)
     except Exception as e:
-        raise Exception(f'Failed to drop table and/or reset '
-                        f'allegations_parse_error in {db_config.error_log} table') from e
+        print(f'Failed to drop table and/or reset '
+              f'allegations_parse_error in {db_config.error_log} table')
+        raise e
     else: # no exception
         changed = c.rowcount
         print(f'Dropped {db_config.allegations} table and '

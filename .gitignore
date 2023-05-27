@@ -13,3 +13,4 @@ db_config.py
 # too-large page scrapes
 data/page_files
 data/pages_html.tar.gz
+nlrb_data.db

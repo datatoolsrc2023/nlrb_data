@@ -19,7 +19,9 @@ if __name__ == '__main__':
                 '''
 
     try:
-        with sql.db_cnx(cursor_factory=DictCursor) as cnx, cnx.cursor() as c:
+        with sql.db_cnx() as cnx:
+            c = cnx.cursor()
+            print('Attempting to count and summarize allegations parse errors...')
             c.execute(count_query)
             count = c.fetchone()[0]
             if count != 0:
@@ -32,4 +34,5 @@ if __name__ == '__main__':
     else: # no exception
         print('Finished counting and summarizing allegations parse errors')
     finally:
+        c.close()
         cnx.close()

@@ -6,10 +6,11 @@ from common import db_config, sql
 def main():
     """Create cases table"""
 
-    statements = sql.get_query_lines_from_file('cases.sql')
+    statements = sql.get_query_lines_from_file(f'{db_config.db_type}/cases.sql')
 
     try:
-        with sql.db_cnx() as cnx, cnx.cursor() as c:
+        with sql.db_cnx() as cnx:
+            c = cnx.cursor()
             print(f'Attempting to create {db_config.cases} table...')
             for statement in statements:
                 c.execute(statement)
@@ -18,6 +19,7 @@ def main():
     else:
         print(f'Created {db_config.cases} table')
     finally:
+        c.close()
         cnx.close()
 
 

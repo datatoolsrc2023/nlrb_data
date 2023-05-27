@@ -2,6 +2,8 @@ from . import paths
 import Common.db_config as db_config
 import petl as etl
 import psycopg2
+from psycopg2.extras import DictCursor
+import sqlite3
 
 
 def get_query_lines_from_file(filename: str) -> list[str]:
@@ -19,23 +21,37 @@ def get_query_lines_from_file(filename: str) -> list[str]:
     return list(statements)
 
 
-def db_cnx(host=db_config.host,
+def db_cnx(db_type=db_config.db_type,
+           sqlite_file=db_config.sqlite_file,
+           host=db_config.host,
            user=db_config.user,
            password=db_config.password,
            dbname=db_config.database,
-           cursor_factory=psycopg2.extensions.cursor,
+           cursor_factory=DictCursor,
            **kwargs):
-    return psycopg2.connect(user=user, host=host, password=password,
+    if db_type == 'sqlite':
+        return sqlite3.connect(sqlite_file)
+    elif db_type == 'postgresql':
+        return psycopg2.connect(user=user, host=host, password=password,
                             dbname=dbname, cursor_factory=cursor_factory,
                             **kwargs)
+    else:
+        raise Exception(f'Unsupported DB type: {db_type}')
 
 
-def db_cnx_str(host: str = db_config.host,
+def db_cnx_str(db_type=db_config.db_type,
+               sqlite_file=db_config.sqlite_file,
+               host: str = db_config.host,
                user: str = db_config.user,
                password: str = db_config.password,
                port: str = db_config.port,
                database: str = db_config.database) -> str:
-    return f'postgresql://{user}:{password}@{host}:{port}/{database}'
+    if db_type == 'sqlite':
+        return f'sqlite://{sqlite_file}'
+    elif db_type == 'postgresql':
+        return f'postgresql://{user}:{password}@{host}:{port}/{database}'
+    else:
+        raise Exception(f'Unsupported DB type: {db_type}')
 
 
 def petl_insert(cases_tbl: etl.Table,

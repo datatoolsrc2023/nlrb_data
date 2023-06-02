@@ -11,7 +11,7 @@ Makefile removes all .html files with size 0
 
 def clean_table_empties(cursor):
     # remove rows from pages table that have an empty raw_text
-    print(f'Checking for and removing empty rows from pages table...')
+    print(f'Checking for and removing rows from `pages` table with an empty text...')
     print('(This may take some time if the pages table is well populated.)')
     try:
         cursor.execute(
@@ -26,7 +26,7 @@ def clean_table_empties(cursor):
 def scraped_files_clean(cursor, directory: pathlib.Path):
     """
     remove any scraped .html page files that haven't been logged in pages table,
-    and remove any pages rows that don't have a downloaded html file
+    and subsequently remove any pages rows that don't have a downloaded html file
     """
     print(f'Removing .html files not in pages table, removing rows without downloaded .html.')
 
@@ -68,9 +68,11 @@ def scraped_files_clean(cursor, directory: pathlib.Path):
 
 
 def main():
-    with sql.db_cnx() as cnx, cnx.cursor() as c:
+    with sql.db_cnx() as cnx:
+        c = cnx.cursor()
         clean_table_empties(cursor=c)
         scraped_files_clean(cursor=c, directory=paths.pages)
+    c.close()
     cnx.close()
 
 

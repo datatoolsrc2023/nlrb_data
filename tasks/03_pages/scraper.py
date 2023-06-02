@@ -34,16 +34,42 @@ def add_to_pages_table(case_id: int,
                        error: bool,
                        raw_text: str):
     
+    # if loading extant .html page files, get case_id from cases table
+    if case_id is None:
+        try:
+            with sql.db_cnx() as cnx:
+                c = cnx.cursor()
+                c.execute(f"""
+                        SELECT t1.id
+                        FROM cases t1
+                        WHERE t1.case_number = '{case_number}';
+                        """)
+                case_id = c.fetchone()
+                c.close()
+                cnx.close()
+        except Exception as e:
+            print(f'Error with case_id as None: {e}')
+
     # insert relevant info to pages table in the db
     try:
-        with sql.db_cnx() as cnx, cnx.cursor() as c:
-            c.execute('''INSERT INTO pages (case_id, case_number, error, raw_text) 
-                            VALUES (%s, %s, %s, %s);''',
-                      (int(case_id), case_number, error, raw_text))        
+        if db_config.db_type == 'sqlite':
+                query = '''INSERT INTO pages
+                            (case_id, case_number, error, raw_text)
+                            VALUES (?, ?, ?, ?)
+                        '''
+        elif db_config.db_type == 'postgresql':
+            query = """INSERT INTO pages (case_id, case_number, error, raw_text) 
+                            VALUES (%s, %s, %s, %s);
+                    """
+                
+        with sql.db_cnx() as cnx:
+            c = cnx.cursor()
+            c.execute(query, (int(case_id), case_number, error, raw_text))        
             
     except Exception as e:
-        print(f'Error adding page to {db_config.cases} table: {e}')
+        print(f'Error adding page to {db_config.pages} table: {e}')
     finally:
+        c.close()
         cnx.close()
 
 

@@ -5,18 +5,18 @@ __pycache__/
 .python-version
 .DS_Store
 .vscode
+
 *.csv
+*.html
+*.tar.gz
+*.log
 
 # database configuration info
 db_config.py
 
 # too-large page scrapes and backups
-data/page_files/*.html
-data/extant_data
-data/pages_html.tar.gz
+data/sample_data
 
-# scraping log and backup postgresql dump
-tasks/03_pages/*.log
-tasks/03_pages/nlrb_dump
-
+# db and backup
 nlrb_data.db
+nlrb_backup.sql

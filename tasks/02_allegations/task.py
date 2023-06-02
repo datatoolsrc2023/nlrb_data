@@ -3,15 +3,11 @@
 from common import db_config, sql
 
 import allegations as alleg
-
-<<<<<<< HEAD
-from psycopg2.extras import DictCursor
 from tqdm import tqdm
-=======
+
 if db_config.db_type == 'sqlite':
     import sqlite3
 
->>>>>>> main
 
 def main():
     """Run the migration."""

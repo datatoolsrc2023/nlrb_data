@@ -11,7 +11,8 @@ logging.basicConfig(filename='scrape.log', filemode='a', encoding='utf-8', level
 
 def main():
     # use the db's `cases` and `pages` table to get a list of pages to scrape
-    with sql.db_cnx() as cnx, cnx.cursor() as c:
+    with sql.db_cnx() as cnx:
+        c = cnx.cursor()
         print('Fetching cases left to scrape.')
         cases = scraper.case_pages_to_fetch(cursor=c)
         if len(cases) == 0:
@@ -22,6 +23,7 @@ def main():
             return 
 
         print('...remaining to scrape:', len(cases))
+    c.close()
     cnx.close()
 
     # run the scraper. can tune the `max_workers` for multi-threading.
@@ -33,20 +35,22 @@ def main():
     # if manually ending scraper, update and display the number of cases remaining
     except KeyboardInterrupt:
         print('scrape stopped')
+        executor.shutdown()
 
     finally:
-        with sql.db_cnx() as cnx, cnx.cursor() as curs:
+        with sql.db_cnx() as cnx:
+            curs = cnx.cursor()
             print('===============================\nTidying up post-scrape.')
             scraper.clean_empty_text_rows(cursor=curs)
             cases = scraper.case_pages_to_fetch(cursor=curs)
             print(f'Scrape stopped with {len(cases)} cases remaining.')
+            
+        curs.close()
+        cnx.close()      
         
-        cnx.close()
-        # sys.exit(0)
-        
+        executor.shutdown()
 
 
 if __name__ == "__main__":
-    main()
-    
+    main() 
     

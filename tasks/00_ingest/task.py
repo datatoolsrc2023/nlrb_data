@@ -35,7 +35,7 @@ def main():
         try:
             sql.petl_insert(insert_tbl, cnx, db_config.cases_raw)
         except Exception as e:
-            print(f'Error loading to DB: {e}')
+            print('Error loading to DB')
             raise e
 
 

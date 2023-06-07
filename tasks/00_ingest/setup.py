@@ -17,7 +17,8 @@ if __name__ == '__main__':
             for statement in statements:
                 c.execute(statement)
     except Exception as e:
-        raise Exception(f'Failed to create table {db_config.cases_raw}') from e
+        print(f'Failed to create table {db_config.cases_raw}')
+        raise e
     else: # no exception
         print(f'Created {db_config.cases_raw} table')
     finally:

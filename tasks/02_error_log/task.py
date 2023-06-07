@@ -13,7 +13,8 @@ def main():
             c.execute(query)
             cnx.commit()
     except Exception as e:
-        raise Exception('Unable to insert case ids into error_log table') from e
+        print('Unable to insert case ids into error_log table')
+        raise e
     else: # no exception
         print('Inserted case IDs from cases table into error_log table')
     finally:

@@ -32,7 +32,8 @@ if __name__ == '__main__':
                 for case_number, raw_text in c.fetchall():
                     print(f'Case: {case_number} Raw text: {raw_text}')
     except Exception as e:
-        raise Exception('Could not count or summarize allegations parse errors') from e
+        print('Could not count or summarize allegations parse errors')
+        raise e
     else: # no exception
         print('Finished counting and summarizing allegations parse errors')
     finally:

@@ -24,7 +24,8 @@ if __name__ == '__main__':
             print(f'Testing for existence of {db_config.error_log} table...')
             c.execute(query)
     except Exception as e:
-        raise Exception(f'Could not test for existence of {db_config.error_log}') from e
+        print(f'Could not test for existence of {db_config.error_log}')
+        raise e
     else: # no exception
         if not c.fetchone():
             raise Exception(f'{db_config.error_log} table does not exist')

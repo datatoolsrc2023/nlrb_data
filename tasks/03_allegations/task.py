@@ -78,8 +78,8 @@ def main():
             c.execute(error_log_query)
 
     except Exception as e:
-        raise Exception(f'Unable to process allegations or update {db_config.error_log} table')\
-            from e
+        print(f'Unable to process allegations or update {db_config.error_log} table')
+        raise e
     else: # no exception
         print(f'Processed allegations and updated {db_config.allegations} table')
         print(f'Updated {db_config.error_log} table')

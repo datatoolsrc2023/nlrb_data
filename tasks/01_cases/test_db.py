@@ -21,7 +21,8 @@ if __name__ == '__main__':
             c = cnx.cursor()
             c.execute(query)
     except Exception as e:
-        raise Exception(f'Could not test for existence of {db_config.cases} table') from e
+        print(f'Could not test for existence of {db_config.cases} table')
+        raise e
     else:
         if not c.fetchone():
             raise Exception(f'Expected {db_config.cases} to exist, '

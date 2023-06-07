@@ -12,7 +12,8 @@ if __name__ == '__main__':
             c = cnx.cursor()
             c.execute(query)
     except Exception as e:
-        raise Exception(f'Could not count rows in {db_config.cases} table') from e
+        print(f'Could not count rows in {db_config.cases} table')
+        raise e
     else: # no exception
         count = c.fetchone()[0]
         if count == 0:

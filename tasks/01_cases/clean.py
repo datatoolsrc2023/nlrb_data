@@ -14,7 +14,8 @@ if __name__ == '__main__':
             print(f'Attempting to drop {db_config.cases} table')
             c.execute(query)
     except Exception as e:
-        raise Exception(f'Failed to drop {db_config.cases} table') from e
+        print(f'Failed to drop {db_config.cases} table')
+        raise e
     else: # no exception
         print(f'Dropped {db_config.cases} table')
     finally:

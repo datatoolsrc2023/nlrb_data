@@ -1,9 +1,8 @@
 CREATE TABLE IF NOT EXISTS allegations (
-    id SERIAL PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY,
     case_id INT NOT NULL,
-    code TEXT NOT NULL,
-    description TEXT NOT NULL,
-    parse_error BOOLEAN NOT NULL,
+    code TEXT,
+    description TEXT,
     raw_text TEXT NOT NULL,
     CONSTRAINT fk_allegation_case
       FOREIGN KEY (case_id) REFERENCES cases (id)

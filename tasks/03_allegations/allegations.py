@@ -33,41 +33,25 @@ def process_allegations(cursor, case_row):
     raw = case_row['allegations_raw']
     case_id = case_row['id']
 
-    exc = None
+    if db_config.db_type == 'sqlite':
+        query = '''INSERT INTO allegations
+                    (case_id, code, description, raw_text)
+                    VALUES (?, ?, ?, ?)
+                '''
+    elif db_config.db_type == 'postgresql':
+        query = """INSERT INTO allegations
+                    (case_id, code, description, raw_text)
+                    VALUES (%s, %s, %s, %s);
+                """
 
     try:
-        okay = True
         for r in parse_lines(raw):
             if r.parse_error:
                 print(f'\tERROR CASE({case_row["case_number"]}): {r.raw}')
-                okay = False
-            
-            if db_config.db_type == 'sqlite':
-                query = '''INSERT INTO allegations
-                            (case_id, code, description, parse_error, raw_text)
-                            VALUES (?, ?, ?, ?, ?)
-                        '''
-            elif db_config.db_type == 'postgresql':
-                query = """INSERT INTO allegations
-                            (case_id, code, description, parse_error, raw_text)
-                            VALUES (%s, %s, %s, %s, %s);
-                        """
 
-            cursor.execute(query, (case_id, r.code, r.desc, r.parse_error, r.raw))
+            cursor.execute(query, (case_id, r.code, r.desc, r.raw))
 
-        #TODO We might be good to dispense with this part altogether...
-        #TODO How do I ensure this worked?
-        if db_config.db_type == 'sqlite':
-            query = 'UPDATE cases SET allegations_parse_error = ? WHERE id = ?;'
-        elif db_config.db_type == 'postgresql':
-            query = 'UPDATE cases SET allegations_parse_error = %s WHERE id = %s;'
-
-        cursor.execute(query, (False if okay else True, case_id))
     except Exception as e:
-        print(f'Error: {e}')
-        exc = e
+        raise Exception('Unable to parse allegations') from e
     finally:
         cursor.close()
-        if exc is not None:
-            raise(exc)
-

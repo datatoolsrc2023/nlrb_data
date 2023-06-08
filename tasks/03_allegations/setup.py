@@ -16,7 +16,8 @@ if __name__ == '__main__':
                 print(statement)
                 c.execute(statement)
     except Exception as e:
-        raise Exception(f'Failed to create {db_config.allegations} table') from e
+        print(f'Failed to create {db_config.allegations} table')
+        raise e
     else:
         print(f'Created {db_config.allegations} table')
     finally:

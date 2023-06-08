@@ -46,7 +46,7 @@ Running `./allegations.py` will:
 * Read each case's `allegations_raw`, when not null or empty
 * Attempt to parse any allegations within the text
 * Populate the `allegations` table for each allegation found
-* Set the case's `allegations_parse_error` to `YES`/`1` if one or more allegations failed to parse.
+* Set the case's `allegations_parse_error` to `1`/`true` if one or more allegations failed to parse.
 
 ## Fixing stuff
 If you find yourself in a pickle while developing, you can always run `./reset.sh` to reload your data set.

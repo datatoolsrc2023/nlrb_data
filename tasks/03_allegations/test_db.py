@@ -17,7 +17,8 @@ if __name__ == '__main__':
             c_cases.execute(cases_query)
             c_allegations.execute(allegations_query)
     except Exception as e:
-        raise Exception(f'Could not count cases or allegations') from e
+        print(f'Could not count cases or allegations')
+        raise e
     else:
         cases_count = c_cases.fetchone()[0]
         if cases_count == 0:

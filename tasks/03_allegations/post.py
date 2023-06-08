@@ -9,13 +9,15 @@ from psycopg2.extras import DictCursor
 if __name__ == '__main__':
     """Confirm no records require attention."""
 
-    count_query = 'SELECT COUNT(*) c FROM allegations WHERE parse_error is TRUE'
+    count_query = 'SELECT COUNT(*) c FROM error_log WHERE allegations_parse_error is TRUE'
     text_query = '''
                 SELECT c.case_number, a.raw_text
                 FROM cases c
                 INNER JOIN allegations a
                 ON c.id = a.case_id
-                WHERE a.parse_error is TRUE
+                INNER JOIN error_log e
+                on c.id = e.case_id
+                WHERE e.allegations_parse_error is TRUE
                 '''
 
     try:
@@ -30,7 +32,8 @@ if __name__ == '__main__':
                 for case_number, raw_text in c.fetchall():
                     print(f'Case: {case_number} Raw text: {raw_text}')
     except Exception as e:
-        raise Exception('Could not count or summarize allegations parse errors') from e
+        print('Could not count or summarize allegations parse errors')
+        raise e
     else: # no exception
         print('Finished counting and summarizing allegations parse errors')
     finally:

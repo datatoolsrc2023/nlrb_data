@@ -6,7 +6,6 @@ def main():
     import polars as pl
     from psycopg2 import sql as psql
     import psycopg2.extras
-    import sqlite3
 
     # Read case data from cases_raw table
     cnx_str = sql.db_cnx_str()
@@ -38,7 +37,8 @@ def main():
                 )
                 psycopg2.extras.execute_batch(c, insert_stmt, df.rows())
     except Exception as e:
-        raise Exception(f'Error inserting into {db_config.cases}') from e
+        print(f'Error inserting into {db_config.cases}')
+        raise e
     else:
         print(f'Inserted rows into {db_config.cases} table')
     finally:

@@ -14,8 +14,9 @@ def main():
             print(f'Attempting to create {db_config.cases} table...')
             for statement in statements:
                 c.execute(statement)
-    except:
+    except Exception as e:
         print(f'Failed to create {db_config.cases}')
+        raise e
     else:
         print(f'Created {db_config.cases} table')
     finally:

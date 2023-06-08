@@ -16,8 +16,5 @@ CREATE TABLE IF NOT EXISTS  cases  (
      docket_activity_raw TEXT,
      union_name TEXT,
      unit_sought TEXT,
-     voters TEXT,
-     allegations_parse_error BOOLEAN,
-     participants_parse_error BOOLEAN,
-     docket_activity_parse_error BOOLEAN
+     voters TEXT
 );

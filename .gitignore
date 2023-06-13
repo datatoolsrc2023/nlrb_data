@@ -6,17 +6,16 @@ __pycache__/
 .DS_Store
 .vscode
 
+# database configuration info
+db_config.py
+
+# locally stored sample data and logs
+data/sample_data
 *.csv
 *.html
 *.tar.gz
 *.log
 
-# database configuration info
-db_config.py
-
-# too-large page scrapes and backups
-data/sample_data
-
-# db and backup
+# sqlite db and backup
 nlrb_data.db
 nlrb_backup.sql

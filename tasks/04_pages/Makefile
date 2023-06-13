@@ -1,11 +1,9 @@
 SHELL := /bin/bash
 
-all: setup pre task post
+all: setup test task post
 
 clean:
-	# make clean, call manually
-	# Remove empty .html files from scraped pages data
-	find ../../data/page_files -size 0 -delete
+	# make clean, call manually to drop pages table
 	python3 ./clean.py
 
 setup:
@@ -13,18 +11,13 @@ setup:
 	which python3
 	python3 ./setup.py
 
-load:
-	# make load
-	python3 ./load.py
-
-pre:
-	# make pre
+test:
+	# make test
 	python3 ./test_db.py
-
+	
 task:
 	# make task
 	python3 ./task.py
-
 
 post:
 	# make post

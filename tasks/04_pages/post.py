@@ -23,7 +23,7 @@ if __name__ == '__main__':
                                 'to be populated, '
                                 'but found 0 records')
     except Exception as e:
-        raise Exception(f'Could not count rows in {db_config.pages} table') from e
+        raise Exception(f'Could not count rows in {db_config.pages} table: {e}')
     
     try:
         with cnx.cursor() as c:
@@ -32,15 +32,15 @@ if __name__ == '__main__':
             count = len(remaining_cases)
 
     except Exception as e:
-        raise Exception(f'Could not count rows in {db_config.pages} table') from e
+        raise Exception(f'Could not count reamining pages to scrape: {e}')
     
     else: # no exception
-        print(f'{count} case ids {db_config.cases} left to scrape into {db_config.pages}')
-        if count != 0:
-            if input('Would you like to view these case ids? (y)').lower() == 'y':
-                for i, x in enumerate(remaining_cases):
-                    print(f'{i}: {x[0]}')
-
+        if count == 0:
+            print(f'All {db_config.cases} successfully scraped and inserted into {db_config.pages}.')
+        else: 
+            print(f'{count} case ids {db_config.cases} left to scrape into pages table.\
+                  Rerun `make` to continue scraping.')
+        
     finally:
         cnx.close()
     

@@ -1,6 +1,5 @@
 import concurrent.futures
 import logging
-import sys
 
 from common import sql
 import scraper
@@ -10,21 +9,32 @@ import scraper
 logging.basicConfig(filename='scrape.log', filemode='a', encoding='utf-8', level=logging.INFO)
 
 def main():
-    # use the db's `cases` and `pages` table to get a list of pages to scrape
-    with sql.db_cnx() as cnx:
-        c = cnx.cursor()
-        print('Fetching cases left to scrape.')
-        cases = scraper.case_pages_to_fetch(cursor=c)
-        if len(cases) == 0:
-            c.close()
-            
-            
-            print('Scrape completed.')
-            return 
+    query = """
+            SELECT t1.id, t1.case_number
+            FROM cases t1
+                LEFT JOIN pages t2 ON t1.id = t2.case_id
+                WHERE t2.case_id IS NULL;
+            """
 
-        print('...remaining to scrape:', len(cases))
-    c.close()
-    cnx.close()
+    try:
+        with sql.db_cnx() as cnx:
+            c = cnx.cursor()
+            print('Fetching cases left to scrape.')
+            c.execute(query)
+            cases = [x for x in c.fetchall()]
+    except Exception as e:
+        print(f'Unable to gather remaining cases.')
+        raise(e)
+    else: # no exception
+        if len(cases) == 0:
+            print('Scrape complete')
+            return
+        else:
+            print('...remaining to scrape:', len(cases))
+    finally:
+        c.close()
+        cnx.close()
+    
 
     # run the scraper. can tune the `max_workers` for multi-threading.
     # note that each thread/worker opens and closes a connection to the db.
@@ -34,21 +44,34 @@ def main():
 
     # if manually ending scraper, update and display the number of cases remaining
     except KeyboardInterrupt:
-        print('scrape stopped')
-        executor.shutdown()
+        print('Scrape stopped!')
+        executor.shutdown(cancel_futures=True, wait=False)
+    
+    else:
+        print("Scrape completed")
 
     finally:
-        with sql.db_cnx() as cnx:
-            curs = cnx.cursor()
-            print('===============================\nTidying up post-scrape.')
-            scraper.clean_empty_text_rows(cursor=curs)
-            cases = scraper.case_pages_to_fetch(cursor=curs)
-            print(f'Scrape stopped with {len(cases)} cases remaining.')
-            
-        curs.close()
-        cnx.close()      
-        
-        executor.shutdown()
+        try:
+            with sql.db_cnx() as cnx:
+                print('Attempting to count remaining cases and clean empty rows...')
+                c = cnx.cursor()
+                count_query = 'select (select count(*) from cases) - (select count(*) from pages) as row_diff;'
+                c.execute(count_query)
+                num_cases = c.fetchone()[0]
+                c.execute(
+                    """
+                    DELETE FROM pages WHERE raw_text = '';
+                    """
+                    )
+        except Exception as e:
+            print(f'Unable to count cases or clean empty rows: {e}')
+        else:
+            print('Successfully cleaned empty rows.')
+            print(f'Remaining cases to scrape: {num_cases}')
+        finally:
+            c.close()
+            cnx.close()
+
 
 
 if __name__ == "__main__":

@@ -8,6 +8,9 @@ import scraper
 # set up the log
 logging.basicConfig(filename='scrape.log', filemode='a', encoding='utf-8', level=logging.INFO)
 
+# define how many threads/workers to scrape simultaneously
+max_workers = 5
+
 def main():
     query = """
             SELECT t1.id, t1.case_number
@@ -39,8 +42,8 @@ def main():
     # run the scraper. can tune the `max_workers` for multi-threading.
     # note that each thread/worker opens and closes a connection to the db.
     try:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            executor.map(scraper.threaded_scraper, cases)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            executor.map(scraper.scraper, cases)
 
     # if manually ending scraper, update and display the number of cases remaining
     except KeyboardInterrupt:

@@ -28,16 +28,18 @@ def add_page_row(case_id: int,
             
     except Exception as e:
         print(f'Error adding page to {db_config.pages} table: {e}')
+        raise e
+    
     finally:
         c.close()
         cnx.close()
 
 
-
-
-def threaded_scraper(case):
+def scraper(case: tuple):
     """
-    scraper doesn't necessarily need to be run in threads
+    Fetches an NLRB case page and inserts the relevant .html to the DB
+    The `case` parameter is a tuple of (case_id, case_number).
+    `case_id` is the FK to the `cases` table primary key column.
     """
         
     # get some useful variables from the inputs
@@ -55,7 +57,7 @@ def threaded_scraper(case):
     except requests.exceptions.HTTPError as e:
         print(f'Error: {e}, case: {case_number}')
         logging.warning(f'{case_id}, {case_number}, fetch error: {e}')
-        return
+        raise e
     
     # access the relevant info in the html using beautifulsoup
     soup = bs(case_response.text, 'lxml')

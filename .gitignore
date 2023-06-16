@@ -4,7 +4,7 @@ nlrb_env/
 __pycache__/
 .python-version
 .DS_Store
-.vscode
+.vscode/
 
 # database configuration info
 db_config.py

@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-all: setup pre task post
+all: clean setup pre task post
 
 clean:
 	# make clean

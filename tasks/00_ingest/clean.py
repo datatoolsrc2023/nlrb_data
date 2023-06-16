@@ -6,7 +6,7 @@ from common import db_config, sql
 if __name__ == '__main__':
     """Drop cases_raw table"""
 
-    query = 'DROP TABLE IF EXISTS cases_raw'
+    query = 'DROP TABLE IF EXISTS cases_raw;'
 
     try:
         with sql.db_cnx() as cnx:

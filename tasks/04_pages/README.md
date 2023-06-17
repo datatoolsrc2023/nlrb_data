@@ -7,7 +7,7 @@ The scraping task can take quite some time depending on the number of cases in y
 
 - To start the task: `cd` into this directory, and run `make`. 
 - If you need to stop scraping: `^C` to Keyboard Interrupt. It may take a few seconds for all threads to terminate and exit out gracefully. You'll get a prompt on how many cases remain to scrape.
-- To restart the task after a keyboard interrupt or due to a connection error that stalls it out: run `make` again.
+- To **restart** the task after a keyboard interrupt or due to a connection error that stalls it out: run `make task post`.
 
 ## Notes
 The scraper runs parallel threads. It defaults to 5 workers. To tune this, change the `max_workers` variable near the top of `task.py` in this directory.

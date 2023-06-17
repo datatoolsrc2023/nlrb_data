@@ -3,8 +3,11 @@ SHELL := /bin/bash
 all: setup test task post
 
 clean:
-	# make clean, call manually to drop pages table
+	# make clean
+	# call manually to drop pages table
+	# and remove the scrape.log
 	python3 ./clean.py
+	rm scraper.log
 
 setup:
 	# make setup

@@ -1,10 +1,11 @@
-# virtual environment
+# virtual environment and linting
 venv/
 nlrb_env/
 __pycache__/
 .python-version
 .DS_Store
 .vscode/
+.ruff_cache
 
 # database configuration info
 db_config.py

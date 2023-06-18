@@ -19,31 +19,43 @@ def html_raw_participants(html_str: str) -> list:
         raw_participants = [participant for i, participant in enumerate(participants) if i%2==1]
         
     except Exception as e:
-        print('Exception in html parse:', e)
+        print('Exception in html parse:')
         raw_participants = []
+        raise e
+        
     # print(raw_participants)
     return raw_participants
+
+def clean_html(html_str: str) -> str:
+    for x in ["<td>","\n","<b>","\n",]:
+        html_str = html_str.replace(x, '')
+    return html_str.strip().rstrip()
 
 def html_parse_participant(raw_participant_list: list) -> list:
      participants = []
      for raw_participant in raw_participant_list:
         participantDict = {}
         raw_participant = raw_participant.find(name="td")
-        print(raw_participant)
-        brCount = raw_participant.count('<br/>')
+        print(f'raw_participant:{raw_participant}')
+        brCount = str(raw_participant).count('<br/>')
         print('brcount:', brCount)
-        participantDict['kind'] = raw_participant.split('</b>')[0]
-        print(participantDict)
+        participantDict['kind'] = clean_html(str(raw_participant).split('</b>')[0])
+        
 
         if brCount <= 2:
             participantDict['name'] = ''
             participantDict['organization'] = ''
         else:
-            participantDict['name'] = raw_participant.split('<br/>\n')[1].strip()
-            participantDict['organization'] = raw_participant.split('</td>')[0].rstrip().split('\n')[-1].strip().replace(
+            participantDict['name'] = str(raw_participant).split('<br/>\n')[2].strip()
+            participantDict['organization'] = str(raw_participant).split('</td>')[0].rstrip().split('\n')[-1].strip().replace(
                 '<br/>',
                 '')
-        participantDict['role'] = '' if brCount == 1 else raw_participant.split('/>')[1][:-3]
+        if brCount == 1:
+            participantDict['role'] = ''  
+        else:
+            participantDict['role'] = clean_html(str(raw_participant).split('/>')[1][:-3])
+             
+        print(participantDict)
         participants.append(participantDict)
         return participants
     

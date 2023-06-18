@@ -30,8 +30,8 @@ class TestParseParticipants(unittest.TestCase):
         cnx.close()
 
         pd_raw_participants = participants.pd_raw_participants(test_case)
-        html_raw_participants = participants.html_raw_participants(test_case)            
-        print(len(pd_raw_participants), len(html_raw_participants))
+        html_raw_participants = participants.html_raw_participants(test_case)         
+        print(f"pd:{len(pd_raw_participants)}, html:{len(html_raw_participants)}")
         self.assertEqual(len(pd_raw_participants), len(html_raw_participants))
 
 
@@ -39,15 +39,20 @@ class TestParticipantHtmlParse(unittest.TestCase):
     def test_html_participants_parse(self):
         with sql.db_cnx() as cnx:
             c = cnx.cursor()
-            random_row_query = """select raw_text from pages order by random() limit 1;"""
+            random_row_query = """select case_number, raw_text from pages order by random() limit 1;"""
             c.execute(random_row_query)
-            test_case = c.fetchone()[0]
+            test_case = c.fetchone()
+            print('test_case:', test_case[0])
         c.close()
         cnx.close()
-        test_case = participants.html_raw_participants(test_case)
+        test_case = participants.html_raw_participants(test_case[1])
         #print(participants.html_raw_participants(test_case2))
         self.assertIsNotNone(participants.html_parse_participant(test_case))
 
+    def test_html_parse_3_br(self):
+        test_case = participants.html_raw_participants(test_case[1])
+        #print(participants.html_raw_participants(test_case2))
+        self.assertIsNotNone(participants.html_parse_participant(test_case))
 """
     def test_valid_four_point_code(self):
         test_case = "8(b)(1)(A) Duty of Fair Representation, incl'g Superseniority, denial of access"

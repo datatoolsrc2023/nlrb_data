@@ -48,11 +48,31 @@ class TestParticipantHtmlParse(unittest.TestCase):
         test_case = participants.html_raw_participants(test_case[1])
         #print(participants.html_raw_participants(test_case2))
         self.assertIsNotNone(participants.html_parse_participant(test_case))
-
+    """
     def test_html_parse_3_br(self):
         test_case = participants.html_raw_participants(test_case[1])
         #print(participants.html_raw_participants(test_case2))
         self.assertIsNotNone(participants.html_parse_participant(test_case))
+    """
+
+class TestParticipantPdParse(unittest.TestCase):
+    def test_pd_participants_columns(self):
+        with sql.db_cnx() as cnx:
+            c = cnx.cursor()
+            random_row_query = """select case_number, raw_text from pages order by random() limit 1;"""
+            c.execute(random_row_query)
+            test_case = c.fetchone()
+        c.close()
+        cnx.close()
+        result = participants.pd_raw_participants(test_case[1])
+        print('test_case:', test_case[0])
+        print(result)
+        print(participants.pd_participant_parse(result))
+        
+        self.assertIsNotNone(result)
+
+    
+
 """
     def test_valid_four_point_code(self):
         test_case = "8(b)(1)(A) Duty of Fair Representation, incl'g Superseniority, denial of access"

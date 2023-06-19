@@ -6,6 +6,8 @@ import datetime
 from bs4 import BeautifulSoup as bs
 
 
+Row = namedtuple('Row', 'kind role name org address phone parse_error raw')
+
 def read_in_pages_table(cursor) -> str:
      """
      reads in the pages table, returns a list of
@@ -42,14 +44,15 @@ def html_parse_participant(raw_participant_list: list) -> list:
         participantDict['kind'] = clean_html(str(raw_participant).split('</b>')[0])
         
 
+
         if brCount <= 2:
             participantDict['name'] = ''
             participantDict['organization'] = ''
         else:
             participantDict['name'] = str(raw_participant).split('<br/>\n')[2].strip()
-            participantDict['organization'] = str(raw_participant).split('</td>')[0].rstrip().split('\n')[-1].strip().replace(
-                '<br/>',
-                '')
+            participantDict['organization'] = clean_html(
+                str(raw_participant).rsplit(sep='<br/>')[-2]
+                )
         if brCount == 1:
             participantDict['role'] = ''  
         else:
@@ -60,12 +63,11 @@ def html_parse_participant(raw_participant_list: list) -> list:
         return participants
     
 
-
 # def find_docket_link(html_str:str) -> str:
   
-def pd_raw_participants(html_file_location: str) -> list:
+def pd_raw_participants(html_raw: str) -> list:
     try:
-        tables = pd.read_html(html_file_location)
+        tables = pd.read_html(html_raw)
         for df in tables:
             if 'Participant' in df.columns:
                 return df.dropna(how='all') 
@@ -76,9 +78,16 @@ def pd_raw_participants(html_file_location: str) -> list:
     
     # If no participants table, return empty list for testing purposes
     return []
-    
-    
 
+def pd_participant_parse(df: pd.DataFrame):
+    print(df.columns)
+    print(df.to_dict)
+        
+    return
+
+    
+    
+"""
 def read_tables(html_file_location: str) -> tuple:
     tables = pd.read_html(html_file_location)
     print(len(tables))
@@ -91,7 +100,7 @@ def read_tables(html_file_location: str) -> tuple:
     return (docket_df, participants_df)
 
 
-"""
+
 
 current_pages = listdir(paths.pages)
 testing_page_path, testing_case_number = current_pages[4], current_pages[4].split('.html')[0]

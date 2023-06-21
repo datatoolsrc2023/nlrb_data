@@ -6,13 +6,15 @@ from common import sql
 if __name__ == '__main__':
     """Confirm no records require attention."""
 
-    count_query = 'SELECT COUNT(*) p FROM participants WHERE parse_error is TRUE'
+    count_query = 'SELECT COUNT(*) c FROM error_log WHERE participants_parse_error is TRUE'
     text_query = '''
                 SELECT c.case_number, p.raw_text
                 FROM cases c
                 INNER JOIN participants p
                 ON c.id = p.case_id
-                WHERE p.parse_error is TRUE
+                INNER JOIN error_log e
+                on c.id = e.case_id
+                WHERE e.participants_parse_error is TRUE
                 '''
 
     try:
@@ -26,7 +28,8 @@ if __name__ == '__main__':
                 for case_number, raw_text in c.fetchall():
                     print(f'Case: {case_number} Raw text: {raw_text}')
     except Exception as e:
-        raise Exception('Could not count or summarize participants parse errors') from e
+        print('Could not count or summarize participants parse errors')
+        raise e
     else: # no exception
         print('Finished counting and summarizing participants parse errors')
     finally:

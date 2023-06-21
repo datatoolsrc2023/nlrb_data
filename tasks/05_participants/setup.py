@@ -6,7 +6,7 @@ from common import db_config, sql
 if __name__ == '__main__':
     """Ensure database is created as needed."""
 
-    statements = sql.get_query_lines_from_file('participants.sql')
+    statements = sql.get_query_lines_from_file(f'{db_config.db_type}/participants.sql')
 
     try:
         with sql.db_cnx() as cnx:

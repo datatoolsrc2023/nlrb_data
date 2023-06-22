@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-all: setup test task post
+all: setup pre task post
 
 clean:
 	# make clean
@@ -14,8 +14,8 @@ setup:
 	which python3
 	python3 ./setup.py
 
-test:
-	# make test
+pre:
+	# make pre
 	python3 ./test_db.py
 	
 task:

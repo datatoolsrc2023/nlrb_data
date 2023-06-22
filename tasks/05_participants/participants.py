@@ -120,7 +120,7 @@ def parse_participant(html_raw=str) -> list[dict]:
     return out_dict_list
 
 
-def process_participants(case_row):
+def process_participants(cursor, case_row):
     raw = case_row["raw_text"]
     case_id = case_row["case_id"]
     case_number = case_row["case_number"]
@@ -135,11 +135,8 @@ def process_participants(case_row):
                     (case_id, p_name, p_kind, p_role, p_org, p_address, p_phone, raw_participant)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
                 """
-    cnx = sql.db_cnx()
-    cursor = cnx.cursor()
     try:
         for r in parse_participant(raw):
-            # print('r HERE:', r)
             cursor.execute(
                 query,
                 (
@@ -157,6 +154,57 @@ def process_participants(case_row):
     except Exception as e:
         print(f"Unable to parse participants from {case_id}, {case_number}")
         raise e
+
+
+
+def add_participant_row(case_id: int, r: list):
+     # insert relevant info to participants table in the db
+    try:
+        if db_config.db_type == "sqlite":
+            query = """INSERT INTO participants
+                        (case_id, p_name, p_kind, p_role, p_org, p_address, p_phone, raw_participant)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """
+        elif db_config.db_type == "postgresql":
+            query = """INSERT INTO participants
+                        (case_id, p_name, p_kind, p_role, p_org, p_address, p_phone, raw_participant)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+                    """
+
+        with sql.db_cnx() as cnx:
+            c = cnx.cursor()
+            c.execute(
+                query,
+                (
+                    case_id,
+                    r["p_name"],
+                    r["p_kind"],
+                    r["p_role"],
+                    r["p_org"],
+                    r["p_address"],
+                    r["p_phone"],
+                    r["raw_participant"],
+                ),
+            )
+
+    except Exception as e:
+        print(f"Error adding page to {db_config.participants} table: {e}")
+        raise e
+
     finally:
-        cursor.close()
+        c.close()
         cnx.close()
+    
+
+def threaded_process_participants(case_row):
+    raw = case_row["raw_text"]
+    case_id = case_row["case_id"]
+    case_number = case_row["case_number"]
+
+    try:
+        for r in parse_participant(raw):
+            add_participant_row(case_id=case_id, r=r)
+
+    except Exception as e:
+        print(f"Unable to parse participants from {case_id}, {case_number}")
+        raise e

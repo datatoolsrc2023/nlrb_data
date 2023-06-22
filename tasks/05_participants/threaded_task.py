@@ -2,6 +2,7 @@
 from tqdm import tqdm
 import participants
 from common import db_config, sql
+import concurrent.futures
 import time
 
 
@@ -32,37 +33,55 @@ WHERE c.participants_raw IS NOT NULL
     """
 
     # query = "SELECT * FROM pages limit 50"
+    try:
+        with sql.db_cnx() as cnx:
+            c = cnx.cursor()
+            c.execute(query=participants_query)
 
-    with sql.db_cnx() as cnx:
-        c = cnx.cursor()
-        c.execute(query=participants_query)
+            if db_config.db_type == "sqlite":
+                # sqlite3 doesn't make a rowcount attribute available
+                # so to get the row count, we have to fetch all rows and
+                # get the len() of the result
+                result = [x for x in c.fetchall()]
+                n = len(result)
+            elif db_config.db_type == "postgresql":
+                # getting the postgresql rowcount attribute is
+                # less memory intensive than fetching all rows
+                result = [x for x in c.fetchall()]
+                n = c.rowcount
 
-        if db_config.db_type == "sqlite":
-            # sqlite3 doesn't make a rowcount attribute available
-            # so to get the row count, we have to fetch all rows and
-            # get the len() of the result
-            result = c.fetchall()
-            n = len(result)
-        elif db_config.db_type == "postgresql":
-            # getting the postgresql rowcount attribute is
-            # less memory intensive than fetching all rows
-            result = c
-            n = c.rowcount
+    
+    except Exception as e:
+        print("Unable to...")
+        raise e
+    else:
         print(f"Pages with participants: {n}")
+    finally:
+        c.close()
+        cnx.close()
 
-        print("Processing participants...")
-        t1 = time.time()
 
+    print("Processing participants...")
+    t1 = time.time()
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            
+            executor.map(participants.threaded_process_participants, result)
+
+    except KeyboardInterrupt:
+        print("Parse stopped!")
+        executor.shutdown(cancel_futures=True, wait=False)
+
+    else:
+        print(f"Completed parsing of {n} rows in  {round(time.time() - t1, 2)}s")
+        
+        """
         for row in tqdm(result):
             participants.process_participants(cnx.cursor(), row)
-
+        """
             # update error_log col of allegations_parse_error table
             # print(f'Attempting to update {db_config.error_log} table...')
             # c.execute(error_log_query)
-
-    c.close()
-    cnx.close()
-    print(f"Completed parsing of {n} rows in  {round(time.time() - t1, 2)}s")
 
 
 if __name__ == "__main__":

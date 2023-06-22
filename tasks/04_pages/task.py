@@ -33,7 +33,7 @@ def main():
         raise (e)
     else:  # no exception
         if len(cases) == 0:
-            print("Scrape complete")
+            print("Scrape already completed.")
             return
         else:
             print("...remaining to scrape:", len(cases))
@@ -53,7 +53,7 @@ def main():
         executor.shutdown(cancel_futures=True, wait=False)
 
     else:
-        print("Scrape completed")
+        print("Task completed.")
 
     finally:
         try:

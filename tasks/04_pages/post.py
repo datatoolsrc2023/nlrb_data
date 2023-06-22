@@ -4,8 +4,8 @@ from common import db_config, sql
 
 if __name__ == "__main__":
     """
-    Confirm the scraper has finished by ensuring all case_ids from the cases table
-    appear in the pages table.
+    Confirm the scraper has finished by ensuring the cases and pages tables
+    have the same number of rows.
     """
 
     count_query = (
@@ -13,16 +13,12 @@ if __name__ == "__main__":
                     " as row_diff;"
                 )
                 
-
+    print("Checking that pages were scraped successfully.")
     try:
         with sql.db_cnx() as cnx, cnx.cursor() as c:
             c.execute(count_query)
             count = c.fetchone()[0]
-            """
-            so, basically just instead of doing a big comparison,
-            it's like....if count is 0, you're done!
-            but if there's an error, just catch it here.
-            """
+        
     except Exception as e:
         raise Exception(f"Could not count rows in {db_config.pages} table: {e}")
 
@@ -34,8 +30,8 @@ if __name__ == "__main__":
             )
         else:
             print(
-                f"{count} case ids {db_config.cases} left to scrape into pages table.  "
-                "                Rerun `make` to continue scraping."
+                f"{count} case ids from {db_config.cases} remain to scrape into pages table.  "
+                "                Rerun `make task post` to continue scraping."
             )
 
     finally:

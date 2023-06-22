@@ -120,7 +120,8 @@ def parse_participant(html_raw=str) -> list[dict]:
     return out_dict_list
 
 
-def process_participants(cursor, case_row):
+def process_participants(connection, case_row):
+    curs = connection.cursor()
     raw = case_row["raw_text"]
     case_id = case_row["case_id"]
     case_number = case_row["case_number"]
@@ -137,7 +138,7 @@ def process_participants(cursor, case_row):
                 """
     try:
         for r in parse_participant(raw):
-            cursor.execute(
+            curs.execute(
                 query,
                 (
                     case_id,
@@ -154,6 +155,9 @@ def process_participants(cursor, case_row):
     except Exception as e:
         print(f"Unable to parse participants from {case_id}, {case_number}")
         raise e
+    
+    finally:
+        curs.close()
 
 
 

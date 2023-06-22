@@ -2,8 +2,6 @@
 
 from common import db_config, sql
 
-from psycopg2.extras import DictCursor 
-
 
 if __name__ == '__main__':
     """Ensure database is created as needed."""

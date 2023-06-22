@@ -4,6 +4,7 @@ all: setup pre task post
 
 clean:
 	# make clean
+	# call manually
 	# Drop cases table
 	python3 ./clean.py
 

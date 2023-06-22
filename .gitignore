@@ -1,8 +1,22 @@
-db_config.py
+# virtual environment and linting
 venv/
 nlrb_env/
 __pycache__/
+.python-version
 .DS_Store
-.vscode
+.vscode/
+.ruff_cache
+
+# database configuration info
+db_config.py
+
+# locally stored sample data and logs
+data/sample_data
 *.csv
+*.html
+*.tar.gz
+*.log
+
+# sqlite db and backup
 nlrb_data.db
+nlrb_backup.sql

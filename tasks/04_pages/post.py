@@ -9,16 +9,16 @@ if __name__ == "__main__":
     """
 
     count_query = (
-                    "select (select count(*) from cases) - (select count(*) from pages)"
-                    " as row_diff;"
-                )
-                
+        "select (select count(*) from cases) - (select count(*) from pages)"
+        " as row_diff;"
+    )
+
     print("Checking if all pages were scraped successfully.")
     try:
         with sql.db_cnx() as cnx, cnx.cursor() as c:
             c.execute(count_query)
             count = c.fetchone()[0]
-        
+
     except Exception as e:
         raise Exception(f"Could not count rows in {db_config.pages} table: {e}")
 

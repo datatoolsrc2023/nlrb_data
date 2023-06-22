@@ -13,7 +13,7 @@ if __name__ == "__main__":
                     " as row_diff;"
                 )
                 
-    print("Checking that pages were scraped successfully.")
+    print("Checking if all pages were scraped successfully.")
     try:
         with sql.db_cnx() as cnx, cnx.cursor() as c:
             c.execute(count_query)
@@ -25,13 +25,13 @@ if __name__ == "__main__":
     else:  # no exception
         if count == 0:
             print(
-                f"All {db_config.cases} successfully scraped "
-                f"and inserted into {db_config.pages}."
+                f"All {db_config.cases} have been scraped "
+                f"and inserted into {db_config.pages} table."
             )
         else:
             print(
-                f"{count} case ids from {db_config.cases} remain to scrape into pages table.  "
-                "                Rerun `make task post` to continue scraping."
+                f"{count} cases remain to scrape into pages table.  "
+                "Rerun `make task post` to continue scraping."
             )
 
     finally:

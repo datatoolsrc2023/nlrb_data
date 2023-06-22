@@ -55,6 +55,8 @@ def main():
     else:
         print("Task completed.")
 
+    # Whether the task has completed or been manually stopped,
+    # do some tidying, and check how many cases remain to scrape.
     finally:
         try:
             with sql.db_cnx() as cnx:

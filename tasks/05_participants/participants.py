@@ -1,9 +1,29 @@
 from common import db_config
 import pandas as pd
 from bs4 import BeautifulSoup as bs
+from common import sql
+
+
+def clean_html(html_str: str) -> str:
+    """
+    A simple helper function for cleaning html artifacts from html strings.
+    """
+    for x in [
+        "<td>",
+        "\n",
+        "<b>",
+        "\n",
+    ]:
+        html_str = html_str.replace(x, "")
+    return html_str.strip().rstrip()
 
 
 def html_raw_participants(html_str: str) -> list:
+    """
+    Reads in an html string from the `raw_text` column in the `pages` table,
+    finds the participants table, collects the rows in the table,
+    and finally returns a list of participant strings that will be parsed in the next step.
+    """
     try:
         soup = bs(html_str, "lxml")
         participants_table = soup.find(
@@ -25,25 +45,20 @@ def html_raw_participants(html_str: str) -> list:
     return raw_participants
 
 
-def clean_html(html_str: str) -> str:
-    for x in [
-        "<td>",
-        "\n",
-        "<b>",
-        "\n",
-    ]:
-        html_str = html_str.replace(x, "")
-    return html_str.strip().rstrip()
-
-
+# this needs refacotring, cleaning up!
 def html_parse_participant(raw_participant_list: list) -> list:
+    """
+    Given a list of raw participants from the `html_raw_participants()` function,
+    this function attempts to parse the following 4 pieces of metadata and put them in a dict:
+    ["p_kind", "p_role", "p_name", "p_org"].
+
+    Returns a list of dicts.
+    """
     participants = []
     for raw_participant in raw_participant_list:
         participantDict = {}
         raw_participant = raw_participant.find(name="td")
-        # print(f'raw_participant:{raw_participant}')
         brCount = str(raw_participant).count("<br/>")
-        # print('brcount:', brCount)
         participantDict["p_kind"] = clean_html(str(raw_participant).split("</b>")[0])
 
         if brCount <= 2:
@@ -60,13 +75,15 @@ def html_parse_participant(raw_participant_list: list) -> list:
             participantDict["p_role"] = clean_html(
                 str(raw_participant).split("/>")[1][:-3]
             )
-
-        # print(participantDict)
         participants.append(participantDict)
     return participants
 
 
 def pd_raw_participants(html_raw: str) -> list[dict]:
+    """
+    Leverages pandas's read_html() to find the participant table, which provides three columns:
+    ["raw_participant", "p_address", "p_phone"].
+    """
     try:
         tables = pd.read_html(html_raw)
         for df in tables:
@@ -99,13 +116,11 @@ def parse_participant(html_raw=str) -> list[dict]:
     out_dict_list = []
     for i in range(len(html_participants)):
         temp_dict = pd_raw_dicts[i] | html_participants[i]
-        # print('temp_dict', temp_dict)
         out_dict_list.append(temp_dict)
-    # print('how many in out dict:', len(out_dict_list))
     return out_dict_list
 
 
-def process_participants(cursor, case_row):
+def process_participants(case_row):
     raw = case_row["raw_text"]
     case_id = case_row["case_id"]
     case_number = case_row["case_number"]
@@ -120,7 +135,8 @@ def process_participants(cursor, case_row):
                     (case_id, p_name, p_kind, p_role, p_org, p_address, p_phone, raw_participant)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
                 """
-
+    cnx = sql.db_cnx()
+    cursor = cnx.cursor()
     try:
         for r in parse_participant(raw):
             # print('r HERE:', r)
@@ -143,3 +159,4 @@ def process_participants(cursor, case_row):
         raise e
     finally:
         cursor.close()
+        cnx.close()

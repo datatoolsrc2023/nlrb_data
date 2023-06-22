@@ -3,9 +3,8 @@ from tqdm import tqdm
 import participants
 from common import db_config, sql
 
-def main():
-    
 
+def main():
     participants_query = """
     SELECT c.id as case_id, c.case_number, c.participants_raw, e.participants_parse_error, p.raw_text
 FROM cases c
@@ -50,13 +49,14 @@ WHERE c.participants_raw IS NOT NULL
         print(f"Pages with participants: {n}")
 
         print("Processing participants...")
+
         for row in tqdm(result):
             participants.process_participants(cnx.cursor(), row)
 
             # update error_log col of allegations_parse_error table
             # print(f'Attempting to update {db_config.error_log} table...')
             # c.execute(error_log_query)
-    
+
         c.close()
         cnx.close()
 

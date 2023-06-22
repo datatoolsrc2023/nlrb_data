@@ -3,32 +3,35 @@
 from common import db_config, sql
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """Confirm database meets expectations."""
 
-    pages_query = 'SELECT COUNT(*) c from pages'
-    participants_query = 'SELECT COUNT(*) c from participants'
+    pages_query = "SELECT COUNT(*) c from pages"
+    participants_query = "SELECT COUNT(*) c from participants"
 
     try:
         with sql.db_cnx() as cnx:
             c_pages = cnx.cursor()
             c_participants = cnx.cursor()
-            print('Attempting to count pages and participants...')
+            print("Attempting to count pages and participants...")
             c_pages.execute(pages_query)
             c_participants.execute(participants_query)
     except Exception as e:
-        print('Could not count pages or participants')
+        print("Could not count pages or participants")
         raise e
     else:
         pages_count = c_pages.fetchone()[0]
         if pages_count == 0:
-            raise Exception(f'Expected {db_config.pages} table '
-                            'to be populated, found 0 records')
+            raise Exception(
+                f"Expected {db_config.pages} table " "to be populated, found 0 records"
+            )
         participants_count = c_participants.fetchone()[0]
         if participants_count != 0:
-            raise Exception(f'Expected 0 participants, found {participants_count}')
-        print(f'{db_config.pages} and {db_config.participants} '
-              'table count expectations met')
+            raise Exception(f"Expected 0 participants, found {participants_count}")
+        print(
+            f"{db_config.pages} and {db_config.participants} "
+            "table count expectations met"
+        )
     finally:
         c_pages.close()
         c_participants.close()

@@ -3,7 +3,13 @@ from tqdm import tqdm
 import participants
 from common import db_config, sql
 import time
+import logging
 
+
+# set up a log for diagnostics/debugging
+logging.basicConfig(
+    filename="participants.log", filemode="a", encoding="utf-8", level=logging.INFO
+)
 
 def main():
     participants_query = """
@@ -22,8 +28,8 @@ WHERE c.participants_raw IS NOT NULL
     # then there was an error parsing the raw allegations text
     """error_log_query = 
     UPDATE error_log
-    SET participants_parse_error = CASE WHEN code is null and description is null THEN true
-                                       WHEN code is not null and description is not null then false
+    SET participants_parse_error = CASE WHEN raw_participant is null THEN true
+                                       WHEN raw_participant is not null and description is not null then false
                                        ELSE null
                                        END
     FROM participants
@@ -73,14 +79,13 @@ WHERE c.participants_raw IS NOT NULL
                 # print(f'Attempting to update {db_config.error_log} table...')
                 # c.execute(error_log_query)
     except Exception as e:
+        logging.warning(f"{case_id}, {case_number}, write error:{e}")
         raise e
     else:
         print("processed participants successfully!")
     finally:
         cnx.close()
-        
-    print(f"Completed parsing of {n} rows in  {round(time.time() - t1, 2)}s")
-
+    logging.info(f"Completed parsing of {n} rows and  in  {round(time.time() - t1, 2)}")
 
 if __name__ == "__main__":
     main()

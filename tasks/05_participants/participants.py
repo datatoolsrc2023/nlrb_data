@@ -120,7 +120,7 @@ def parse_participant(html_raw=str) -> list[dict]:
     return out_dict_list
 
 
-def process_participants(connection, case_row):
+def process_participants(connection: sql.db_cnx(), case_row):
     curs = connection.cursor()
     raw = case_row["raw_text"]
     case_id = case_row["case_id"]
@@ -158,6 +158,7 @@ def process_participants(connection, case_row):
     
     finally:
         curs.close()
+        connection.commit()
 
 
 

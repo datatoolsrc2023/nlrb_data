@@ -6,11 +6,13 @@ from common import sql
 if __name__ == "__main__":
     """Confirm no records require attention."""
 
-    count_query = (
-        "SELECT COUNT(*) c FROM error_log WHERE participants_parse_error is TRUE"
+    comparison_query = (
+        "select (select count(case_id) from pages) - (select count(distinct case_id) from participants)"
+        " as row_diff;"
     )
+
     text_query = """
-                SELECT c.case_number, p.raw_text
+                SELECT c.case_number, p.raw_participant
                 FROM cases c
                 INNER JOIN participants p
                 ON c.id = p.case_id
@@ -22,7 +24,7 @@ if __name__ == "__main__":
     try:
         with sql.db_cnx() as cnx:
             c = cnx.cursor()
-            c.execute(count_query)
+            c.execute(comparison_query)
             count = c.fetchone()[0]
             if count != 0:
                 print(f"Expected 0 parse errors, found {count}")

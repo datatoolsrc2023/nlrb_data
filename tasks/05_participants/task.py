@@ -11,6 +11,7 @@ logging.basicConfig(
     filename="participants.log", filemode="a", encoding="utf-8", level=logging.INFO
 )
 
+
 def main():
     participants_query = """
     SELECT c.id as case_id, c.case_number, c.participants_raw, e.participants_parse_error, p.raw_text
@@ -21,24 +22,9 @@ WHERE c.participants_raw IS NOT NULL
   AND c.participants_raw <> ''
   AND e.participants_parse_error IS NULL
   OR e.participants_parse_error = true
-  LIMIT 10000;
+  limit 1000;
     """
 
-    # if code and description are both null in allegations table,
-    # then there was an error parsing the raw allegations text
-    """error_log_query = 
-    UPDATE error_log
-    SET participants_parse_error = CASE WHEN raw_participant is null THEN true
-                                       WHEN raw_participant is not null and description is not null then false
-                                       ELSE null
-                                       END
-    FROM participants
-    WHERE error_log.case_id = participants.case_id
-    ;
-    """
-
-    # query = "SELECT * FROM pages limit 50"
-    """Try block here"""
     try:
         with sql.db_cnx() as cnx:
             c = cnx.cursor()
@@ -56,19 +42,20 @@ WHERE c.participants_raw IS NOT NULL
                 result = c
                 n = c.rowcount
                 result = result.fetchall()
-            print(f"Pages with participants: {n}")
 
-            print("Processing participants...")
-        
     except Exception as e:
-        print("unable to query")
+        print("Unable to query database.")
+        logging.warning(f"Unable to query database..")
         raise e
 
     else:
-        print("queried successfully!")
+        print("Database queried successfully!")
+        print(f"Pages with participants: {n}")
+        print("Processing participants...")
     finally:
         c.close()
         cnx.close()
+
     t1 = time.time()
     try:
         with sql.db_cnx() as cnx:
@@ -79,13 +66,22 @@ WHERE c.participants_raw IS NOT NULL
                 # print(f'Attempting to update {db_config.error_log} table...')
                 # c.execute(error_log_query)
     except Exception as e:
-        logging.warning(f"{case_id}, {case_number}, write error:{e}")
+        c = cnx.cursor()
+        c.execute("select count(*) from pages;")
+        t = time.time() - t1
+        part_rate = round((n - c.rowcount) / t, 2)
+        logging.warning(
+            f"Parsed {c.rowcount} rows out of {n} in {round(t, 2)}s: {part_rate}p/s."
+            f""
+        )
+
         raise e
     else:
-        print("processed participants successfully!")
+        print("...participants processed successfully!")
     finally:
         cnx.close()
-    logging.info(f"Completed parsing of {n} rows and  in  {round(time.time() - t1, 2)}")
+    logging.info(f"Completed parsing of {n} rows in {round(time.time() - t1, 2)}")
+
 
 if __name__ == "__main__":
     main()

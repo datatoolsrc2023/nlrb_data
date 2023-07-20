@@ -7,6 +7,7 @@ from common import sql
 def clean_html(html_str: str) -> str:
     """
     A simple helper function for cleaning html artifacts from html strings.
+    There might be a more idiomatic way for doing this.
     """
     for x in [
         "<td>",
@@ -33,6 +34,8 @@ def html_raw_participants(html_str: str) -> list:
             },
         )
         participants = participants_table.find_all("tr")
+        
+        # participants are separated by blank lines, so use %2 to find every other line
         raw_participants = [
             participant for i, participant in enumerate(participants) if i % 2 == 1
         ]
@@ -153,17 +156,25 @@ def process_participants(connection: sql.db_cnx(), case_row):
             )
 
     except Exception as e:
-        print(f"Unable to parse participants from {case_id}, {case_number}")
+        if db_config.db_type == "sqlite":
+            error_query = """INSERT INTO error_log (case_id, participants_parse_error)
+                    VALUES (?, ?)
+                """
+        elif db_config.db_type == "postgresql":
+            error_query = """INSERT INTO error_log (case_id, participants_parse_error)
+                    VALUES (%s, %s);
+                """
+        print(f"Error parsing participants from case: {case_id}, {case_number}.")
+        curs.execute(error_query, (case_id, True))
         raise e
-    
+
     finally:
         curs.close()
         connection.commit()
 
 
-
 def add_participant_row(case_id: int, r: list):
-     # insert relevant info to participants table in the db
+    # insert relevant info to participants table in the db
     try:
         if db_config.db_type == "sqlite":
             query = """INSERT INTO participants
@@ -199,7 +210,7 @@ def add_participant_row(case_id: int, r: list):
     finally:
         c.close()
         cnx.close()
-    
+
 
 def threaded_process_participants(case_row):
     raw = case_row["raw_text"]
@@ -211,5 +222,5 @@ def threaded_process_participants(case_row):
             add_participant_row(case_id=case_id, r=r)
 
     except Exception as e:
-        print(f"Unable to parse participants from {case_id}, {case_number}")
+        print(f"Unable to parse participants from case_id: {case_id}, case_number: {case_number}")
         raise e

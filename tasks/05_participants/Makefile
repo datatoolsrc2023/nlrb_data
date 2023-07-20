@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-all: setup pre task post teardown
+all: setup pre task post
 
 clean:
 	# Undo everything related to the task. Called manually.
@@ -11,10 +11,6 @@ setup:
 	which python3
 	python3 ./setup.py
 
-teardown:
-	# Anything that needs to be unset every time
-	echo Teardown
-
 pre:
 	# Tests post-setup and pre-main
 	echo Testing database state
@@ -22,10 +18,8 @@ pre:
 	echo Testing parser
 	python3 ./test_parser.py
 	
-
 task:
 	python3 ./task.py
-
 
 post:
 	# Tests post-main and pre-teardown

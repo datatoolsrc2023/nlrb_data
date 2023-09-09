@@ -45,7 +45,6 @@ def html_raw_participants(html_str: str) -> list:
 
     except Exception as e:
         print("Exception in html parse:")
-        raw_participants = []
         raise e
 
     return raw_participants
@@ -107,10 +106,8 @@ def pd_raw_participants(html_raw: str) -> list[dict]:
                 return df.to_dict(orient="records")
 
     except Exception as e:
-        print(f"Pandas table parse error: {e}")
-
-    # If no participants table, return empty list for testing purposes
-    return []
+        print("Pandas table parse error:")
+        raise e
 
 
 def parse_participant(html_raw=str) -> list[dict]:
@@ -122,12 +119,11 @@ def parse_participant(html_raw=str) -> list[dict]:
     try:
         pd_raw_dicts = pd_raw_participants(html_raw=html_raw)
         raw_html_parse = html_raw_participants(html_str=html_raw)
-        html_participants = html_parse_participant(raw_html_parse)
+        html_participants = html_parse_participant(raw_participant_list=raw_html_parse)
 
     except Exception as e:
         print(f"Failed to parse participant: {e}")
-        # print(html_raw)
-        return []
+        raise e
     
     # then merge the results of the pd and html parsing, 
     # output a list of dicts of the participant metadata
@@ -190,7 +186,7 @@ def process_participants(connection: sql.db_cnx(), case_row):
                 """
         print(f"Error parsing participants from case: {case_id}, {case_number}.")
         curs.execute(error_query, (True, case_id))
-        # raise e
+        raise e
 
     finally:
         curs.close()

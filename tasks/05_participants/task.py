@@ -13,18 +13,17 @@ logging.basicConfig(
 
 
 def main():
+    # get the case_id_case_number, raw_participants column from the pages table
     participants_query = """
     SELECT c.id as case_id, c.case_number, c.participants_raw, e.participants_parse_error, p.raw_text
-FROM cases c
-INNER JOIN error_log e ON c.id = e.case_id
-LEFT JOIN pages p ON c.id = p.case_id
-WHERE p.raw_text IS NOT NULL
-  AND p.raw_text <> ''
-  AND e.participants_parse_error IS NULL
-  OR e.participants_parse_error = true
-  limit 1000;
+    FROM cases c
+    INNER JOIN error_log e ON c.id = e.case_id
+    LEFT JOIN pages p ON c.id = p.case_id
+    WHERE c.participants_raw <> ''
+    AND e.participants_parse_error IS NULL
+    OR e.participants_parse_error = true
+    limit 1000;
     """
-
     try:
         with sql.db_cnx() as cnx:
             c = cnx.cursor()

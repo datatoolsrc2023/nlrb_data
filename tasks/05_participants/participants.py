@@ -16,14 +16,17 @@ def clean_html(html_str: str) -> str:
         "\n",
     ]:
         html_str = html_str.replace(x, "")
+
     return html_str.strip().rstrip()
 
 
 def html_raw_participants(html_str: str) -> list:
     """
-    Reads in an html string from the `raw_text` column in the `pages` table,
-    finds the participants table, collects the rows in the table,
-    and finally returns a list of participant strings that will be parsed in the next step.
+    This function takes an HTML string from the `raw_text` column in the `pages` database table,
+    finds the participants HTML table in the string, 
+    collects the rows (i.e., a raw string for each participant) from the table,
+    and finally returns a list of participant HTML strings.
+    Each participant string will be parsed for relevant metadata in html_parse_participants() function.
     """
     try:
         soup = bs(html_str, "lxml")
@@ -48,14 +51,21 @@ def html_raw_participants(html_str: str) -> list:
     return raw_participants
 
 
-# this needs refacotring, cleaning up!
-def html_parse_participant(raw_participant_list: list) -> list:
+
+def html_parse_participant(raw_participant_list: list) -> list[dict]:
+    # this could use refactoring
     """
     Given a list of raw participants from the `html_raw_participants()` function,
     this function attempts to parse the following 4 pieces of metadata and put them in a dict:
     ["p_kind", "p_role", "p_name", "p_org"].
 
-    Returns a list of dicts.
+    Returns a list of dicts with the format:
+    {
+        "p_kind": , 
+        "p_role": , 
+        "p_name": , 
+        "p_org": ,
+    }.
     """
     participants = []
     for raw_participant in raw_participant_list:
@@ -104,18 +114,23 @@ def pd_raw_participants(html_raw: str) -> list[dict]:
 
 
 def parse_participant(html_raw=str) -> list[dict]:
+    """
+    runs the parsing functions in order
+    """
+
+    # first, try to run both the pd and html parsing functions from above
     try:
         pd_raw_dicts = pd_raw_participants(html_raw=html_raw)
         raw_html_parse = html_raw_participants(html_str=html_raw)
-        # print('len(raw_html_parse):', len(raw_html_parse))
         html_participants = html_parse_participant(raw_html_parse)
-        # print('len(html_participants)', len(html_participants))
 
     except Exception as e:
         print(f"Failed to parse participant: {e}")
-        print(html_raw)
-        pass
-
+        # print(html_raw)
+        return []
+    
+    # then merge the results of the pd and html parsing, 
+    # output a list of dicts of the participant metadata
     out_dict_list = []
     for i in range(len(html_participants)):
         temp_dict = pd_raw_dicts[i] | html_participants[i]
@@ -124,25 +139,28 @@ def parse_participant(html_raw=str) -> list[dict]:
 
 
 def process_participants(connection: sql.db_cnx(), case_row):
+    """
+    Connect to the nlrb database, insert a row 
+    """
     curs = connection.cursor()
-    raw = case_row["raw_text"]
+    
     case_id = case_row["case_id"]
     case_number = case_row["case_number"]
 
     if db_config.db_type == "sqlite":
-        query = """INSERT INTO participants
+        p_query = """INSERT INTO participants
                     (case_id, p_name, p_kind, p_role, p_org, p_address, p_phone, raw_participant)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """
     elif db_config.db_type == "postgresql":
-        query = """INSERT INTO participants
+        p_query = """INSERT INTO participants
                     (case_id, p_name, p_kind, p_role, p_org, p_address, p_phone, raw_participant)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
                 """
     try:
-        for r in parse_participant(raw):
+        for r in parse_participant(html_raw=case_row["raw_text"]):
             curs.execute(
-                query,
+                p_query,
                 (
                     case_id,
                     r["p_name"],
@@ -155,72 +173,25 @@ def process_participants(connection: sql.db_cnx(), case_row):
                 ),
             )
 
+    # since this task runs after the error_log table has been set up and populated with allegations errors,
+    # the query here updates extant rows based on case_ids rather than insert new rows.
     except Exception as e:
         if db_config.db_type == "sqlite":
-            error_query = """INSERT INTO error_log (case_id, participants_parse_error)
-                    VALUES (?, ?)
+             error_query = """
+            UPDATE error_log 
+            SET participants_parse_error = ?
+            WHERE case_id = ?;
                 """
         elif db_config.db_type == "postgresql":
-            error_query = """INSERT INTO error_log (case_id, participants_parse_error)
-                    VALUES (%s, %s);
+            error_query = """
+            UPDATE error_log 
+            SET participants_parse_error = %s
+            WHERE case_id = %s;
                 """
         print(f"Error parsing participants from case: {case_id}, {case_number}.")
-        curs.execute(error_query, (case_id, True))
-        raise e
+        curs.execute(error_query, (True, case_id))
+        # raise e
 
     finally:
         curs.close()
         connection.commit()
-
-
-def add_participant_row(case_id: int, r: list):
-    # insert relevant info to participants table in the db
-    try:
-        if db_config.db_type == "sqlite":
-            query = """INSERT INTO participants
-                        (case_id, p_name, p_kind, p_role, p_org, p_address, p_phone, raw_participant)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    """
-        elif db_config.db_type == "postgresql":
-            query = """INSERT INTO participants
-                        (case_id, p_name, p_kind, p_role, p_org, p_address, p_phone, raw_participant)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
-                    """
-
-        with sql.db_cnx() as cnx:
-            c = cnx.cursor()
-            c.execute(
-                query,
-                (
-                    case_id,
-                    r["p_name"],
-                    r["p_kind"],
-                    r["p_role"],
-                    r["p_org"],
-                    r["p_address"],
-                    r["p_phone"],
-                    r["raw_participant"],
-                ),
-            )
-
-    except Exception as e:
-        print(f"Error adding page to {db_config.participants} table: {e}")
-        raise e
-
-    finally:
-        c.close()
-        cnx.close()
-
-
-def threaded_process_participants(case_row):
-    raw = case_row["raw_text"]
-    case_id = case_row["case_id"]
-    case_number = case_row["case_number"]
-
-    try:
-        for r in parse_participant(raw):
-            add_participant_row(case_id=case_id, r=r)
-
-    except Exception as e:
-        print(f"Unable to parse participants from case_id: {case_id}, case_number: {case_number}")
-        raise e

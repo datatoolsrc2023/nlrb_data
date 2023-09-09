@@ -18,8 +18,8 @@ def main():
 FROM cases c
 INNER JOIN error_log e ON c.id = e.case_id
 LEFT JOIN pages p ON c.id = p.case_id
-WHERE c.participants_raw IS NOT NULL
-  AND c.participants_raw <> ''
+WHERE p.raw_text IS NOT NULL
+  AND p.raw_text <> ''
   AND e.participants_parse_error IS NULL
   OR e.participants_parse_error = true
   limit 1000;
@@ -42,6 +42,7 @@ WHERE c.participants_raw IS NOT NULL
                 result = c
                 n = c.rowcount
                 result = result.fetchall()
+        
 
     except Exception as e:
         print("Unable to query database.")
@@ -62,9 +63,6 @@ WHERE c.participants_raw IS NOT NULL
             for row in tqdm(result):
                 participants.process_participants(cnx, row)
 
-                # update error_log col of allegations_parse_error table
-                # print(f'Attempting to update {db_config.error_log} table...')
-                # c.execute(error_log_query)
     except Exception as e:
         c = cnx.cursor()
         c.execute("select count(*) from pages;")
@@ -72,7 +70,6 @@ WHERE c.participants_raw IS NOT NULL
         part_rate = round((n - c.rowcount) / t, 2)
         logging.warning(
             f"Parsed {c.rowcount} rows out of {n} in {round(t, 2)}s: {part_rate}p/s."
-            f""
         )
 
         raise e

@@ -7,7 +7,9 @@ if __name__ == "__main__":
     # not all cases have participants
     """
     comparison_query = (
-        "select (select count(case_id) from pages) - (select count(distinct case_id) from participants)"
+        "select 
+            (select count(case_id) from pages) - 
+            (select count(distinct case_id) from participants)"
         " as row_diff;"
     )
     """

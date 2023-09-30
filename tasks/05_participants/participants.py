@@ -22,11 +22,13 @@ def clean_html(html_str: str) -> str:
 
 def html_raw_participants(html_str: str) -> list:
     """
-    This function takes an HTML string from the `raw_text` column in the `pages` database table,
+    This function takes an HTML string
+    from the `raw_text` column in the `pages` database table,
     finds the participants HTML table in the string,
     collects the rows (i.e., a raw string for each participant) from the table,
     and finally returns a list of participant HTML strings.
-    Each participant string will be parsed for relevant metadata in html_parse_participants() function.
+    Each participant string will be parsed for relevant metadata
+    in html_parse_participants() function.
     """
     try:
         soup = bs(html_str, "lxml")
@@ -57,7 +59,7 @@ def html_raw_participants(html_str: str) -> list:
 def html_parse_participant(raw_participant_list: list) -> list[dict]:
     """
     Given a list of raw participants from the `html_raw_participants()` function,
-    this function attempts to parse the following 4 pieces of metadata and put them in a dict:
+    this function attempts to parse the following 4 pieces of metadata:
     ["p_kind", "p_role", "p_name", "p_org"].
 
     Returns a list of dicts with the format:
@@ -89,7 +91,7 @@ def html_parse_participant(raw_participant_list: list) -> list[dict]:
         # it is impossible to reliably or consistently tell which it is.
         # This code distinguishes them if they're both present, but
         # it copies the same value for both dict keys if there's only one value present.
-        # In other words, it responds to the ambiguity with redundancy. 
+        # In other words, it responds to the ambiguity with redundancy.
         else:
             participantDict["p_name"] = str(raw_participant).split("<br/>\n")[2].strip()
             participantDict["p_org"] = clean_html(
@@ -108,7 +110,8 @@ def html_parse_participant(raw_participant_list: list) -> list[dict]:
 
 def pd_raw_participants(html_raw: str) -> list[dict]:
     """
-    Leverages pandas's read_html() to find the participant table, which provides three columns:
+    Leverages pandas's read_html() to find the participant table,
+    which provides three columns:
     ["raw_participant", "p_address", "p_phone"].
     """
     try:
@@ -157,12 +160,32 @@ def process_participants(connection: sql.db_cnx(), case_row):
 
     if db_config.db_type == "sqlite":
         p_query = """INSERT INTO participants
-                    (case_id, case_number, p_name, p_kind, p_role, p_org, p_address, p_phone, raw_participant)
+                    (
+                        case_id, 
+                        case_number, 
+                        p_name, 
+                        p_kind, 
+                        p_role, 
+                        p_org, 
+                        p_address, 
+                        p_phone, 
+                        raw_participant
+                    )
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """
     elif db_config.db_type == "postgresql":
         p_query = """INSERT INTO participants
-                    (case_id, case_number, p_name, p_kind, p_role, p_org, p_address, p_phone, raw_participant)
+                    (
+                        case_id,
+                        case_number,
+                        p_name,
+                        p_kind,
+                        p_role,
+                        p_org,
+                        p_address,
+                        p_phone,
+                        raw_participant
+                    )
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
                 """
     try:
@@ -182,7 +205,8 @@ def process_participants(connection: sql.db_cnx(), case_row):
                 ),
             )
 
-    # since this task runs after the error_log table has been set up and populated with allegations errors,
+    # Since this task runs after the error_log table
+    # has been set up and populated with allegations errors,
     # the query here updates extant rows based on case_ids rather than insert new rows.
     except Exception as e:
         if db_config.db_type == "sqlite":
@@ -197,8 +221,11 @@ def process_participants(connection: sql.db_cnx(), case_row):
             SET participants_parse_error = %s
             WHERE case_id = %s;
                 """
-        print(f"Error parsing participants from case: {case_row['case_id']}, {case_row['case_number']}.")
-        curs.execute(error_query, (True, case_id))
+        print(
+            f"Error parsing participants from case: \
+            {case_row['case_id']}, {case_row['case_number']}."
+        )
+        curs.execute(error_query, (True, case_row["case_id"]))
         raise e
 
     finally:

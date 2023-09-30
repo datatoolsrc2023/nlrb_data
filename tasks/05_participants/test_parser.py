@@ -70,9 +70,12 @@ class TestParseParticipants(unittest.TestCase):
             with self.subTest(test_text=test_text[2]):
                 pd_raw_participants = participants.pd_raw_participants(test_text[2])
                 html_raw_participants = participants.html_raw_participants(test_text[2])
-                # Uncomment to see the number of participants found by the pd and html based parsers.
+                # Uncomment to see the number of participants
+                # found by the pd and html based parsers.
+
                 # print(
-                #    f"lengths of pd:{len(pd_raw_participants)}, html:{len(html_raw_participants)}"
+                #    f"lengths of pd:{len(pd_raw_participants)},\
+                #   html:{len(html_raw_participants)}"
                 # )
                 self.assertEqual(len(pd_raw_participants), len(html_raw_participants))
 

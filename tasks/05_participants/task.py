@@ -24,7 +24,7 @@ def main():
     AND (e.participants_parse_error IS NULL
     OR e.participants_parse_error = true);
     """
-    
+
     try:
         with sql.db_cnx() as cnx:
             c = cnx.cursor()

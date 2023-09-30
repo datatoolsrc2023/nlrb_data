@@ -58,7 +58,7 @@ def html_raw_participants(html_str: str) -> list:
 
 def html_parse_single_participant(raw_participant: str) -> dict:
     """
-    Given an input HTML string of a single raw_participant, 
+    Given an input HTML string of a single raw_participant,
     attempt to parse the following 4 pieces of metadata:
     {
         "p_kind": ,
@@ -128,7 +128,7 @@ def pd_parser(html_raw: str) -> list[dict]:
 
 
 def parse_participants(html_raw=str) -> list[dict]:
-    """ 
+    """
     Run the pd_parser() and html_parser() to get a list of dicts,
     one dict per participant in a given case.
 

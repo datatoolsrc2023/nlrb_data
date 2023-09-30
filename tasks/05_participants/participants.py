@@ -24,7 +24,7 @@ def html_raw_participants(html_str: str) -> list:
     """
     This function takes an HTML string
     from the `raw_text` column in the `pages` database table,
-    finds the participants HTML table in the string,
+    finds the participants HTML table from that string,
     collects the rows (i.e., a raw string for each participant) from the table,
     and finally returns a list of participant HTML strings.
     Each participant string will be parsed for relevant metadata
@@ -56,59 +56,57 @@ def html_raw_participants(html_str: str) -> list:
     return raw_participants
 
 
-def html_parse_participant(raw_participant_list: list) -> list[dict]:
+def html_parse_single_participant(raw_participant: str) -> dict:
     """
-    Given a list of raw participants from the `html_raw_participants()` function,
-    this function attempts to parse the following 4 pieces of metadata:
-    ["p_kind", "p_role", "p_name", "p_org"].
+    Given an input HTML string, attempt to parse the following 4 pieces of metadata:
+    {
+        "p_kind": ,
+        "p_role": ,
+        "p_name": ,
+        "p_org": ,
+    }
+    """
+    participantDict = {}
+    raw_participant = raw_participant.find(name="td")
+    brCount = str(raw_participant).count("<br/>")
+    participantDict["p_kind"] = clean_html(str(raw_participant).split("</b>")[0])
 
-    Returns a list of dicts with the format:
-    [
-        {
-            "p_kind": ,
-            "p_role": ,
-            "p_name": ,
-            "p_org": ,
-        },
-        {
-        ...
-        },...
+    if brCount <= 2:
+        participantDict["p_name"] = ""
+        participantDict["p_org"] = ""
+    # If there is only a name or only an organization associated with a participant,
+    # it is impossible to reliably or consistently tell which it is.
+    # This code distinguishes them if they're both present, but
+    # it copies the same value for both dict keys if there's only one value present.
+    # In other words, it responds to the ambiguity with redundancy.
+    else:
+        participantDict["p_name"] = str(raw_participant).split("<br/>\n")[2].strip()
+        participantDict["p_org"] = clean_html(
+            str(raw_participant).rsplit(sep="<br/>")[-2]
+        )
+    if brCount == 1:
+        participantDict["p_role"] = ""
+    else:
+        participantDict["p_role"] = clean_html(str(raw_participant).split("/>")[1][:-3])
+
+    return participantDict
+
+
+def html_parser(html_str: str) -> list[dict]:
+    """
+    Runs the html_parse_metadata() function over list of raw participants
+    from the `html_raw_participants()` function, called on a single case.
+    Returns a list of dicts with relevant metadata.
+    """
+    raw_participant_list = html_raw_participants(html_str=html_str)
+
+    return [
+        html_parse_single_participant(raw_participant)
+        for raw_participant in raw_participant_list
     ]
 
-    """
-    participants = []
-    for raw_participant in raw_participant_list:
-        participantDict = {}
-        raw_participant = raw_participant.find(name="td")
-        brCount = str(raw_participant).count("<br/>")
-        participantDict["p_kind"] = clean_html(str(raw_participant).split("</b>")[0])
 
-        if brCount <= 2:
-            participantDict["p_name"] = ""
-            participantDict["p_org"] = ""
-
-        # If there is only a name or only an organization associated with a participant,
-        # it is impossible to reliably or consistently tell which it is.
-        # This code distinguishes them if they're both present, but
-        # it copies the same value for both dict keys if there's only one value present.
-        # In other words, it responds to the ambiguity with redundancy.
-        else:
-            participantDict["p_name"] = str(raw_participant).split("<br/>\n")[2].strip()
-            participantDict["p_org"] = clean_html(
-                str(raw_participant).rsplit(sep="<br/>")[-2]
-            )
-
-        if brCount == 1:
-            participantDict["p_role"] = ""
-        else:
-            participantDict["p_role"] = clean_html(
-                str(raw_participant).split("/>")[1][:-3]
-            )
-        participants.append(participantDict)
-    return participants
-
-
-def pd_raw_participants(html_raw: str) -> list[dict]:
+def pd_parser(html_raw: str) -> list[dict]:
     """
     Leverages pandas's read_html() to find the participant table,
     which provides three columns:
@@ -128,16 +126,19 @@ def pd_raw_participants(html_raw: str) -> list[dict]:
         raise e
 
 
-def parse_participant(html_raw=str) -> list[dict]:
-    """
-    runs the parsing functions in order
+def parse_participants(html_raw=str) -> list[dict]:
+    """ 
+    Run the pd_parser() and html_parser() to get a list of dicts,
+    one dict per participant in a given case.
+
+    This list will be inserted into the participants table of the db
+    with the process_participants() function.
     """
 
     # first, try to run both the pd and html parsing functions from above
     try:
-        pd_raw_dicts = pd_raw_participants(html_raw=html_raw)
-        raw_html_parse = html_raw_participants(html_str=html_raw)
-        html_participants = html_parse_participant(raw_participant_list=raw_html_parse)
+        pd_participants_dict = pd_parser(html_raw=html_raw)
+        html_participants_dict = html_parser(html_str=html_raw)
 
     except Exception as e:
         print(f"Failed to parse participant: {e}")
@@ -146,8 +147,8 @@ def parse_participant(html_raw=str) -> list[dict]:
     # then merge the results of the pd and html parsing,
     # output a list of dicts of the participant metadata
     out_dict_list = []
-    for i in range(len(html_participants)):
-        temp_dict = pd_raw_dicts[i] | html_participants[i]
+    for i in range(len(html_participants_dict)):
+        temp_dict = pd_participants_dict[i] | html_participants_dict[i]
         out_dict_list.append(temp_dict)
     return out_dict_list
 
@@ -189,7 +190,7 @@ def process_participants(connection: sql.db_cnx(), case_row):
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
                 """
     try:
-        for r in parse_participant(html_raw=case_row["raw_text"]):
+        for r in parse_participants(html_raw=case_row["raw_text"]):
             curs.execute(
                 p_query,
                 (

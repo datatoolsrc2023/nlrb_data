@@ -14,7 +14,8 @@ logging.basicConfig(
 
 def main():
     # Get the case_id, case_number, raw_participants column from the pages table
-    # for cases that actually have participants.
+    # for cases that have participants.
+    # This query can take some time for larger tables.
 
     participants_query = """
     SELECT p.case_id, p.case_number, p.raw_text
@@ -22,7 +23,7 @@ def main():
     JOIN error_log e ON p.case_id = e.case_id
     WHERE p.raw_text NOT LIKE '%Participants data is not available%'
     AND (e.participants_parse_error IS NULL
-    OR e.participants_parse_error = true);
+    OR e.participants_parse_error = true) LIMIT 1000;
     """
 
     try:
@@ -52,6 +53,7 @@ def main():
         print("Database queried successfully!")
         print(f"Pages with participants: {n}")
     finally:
+        # Tearing down the connection/cursor may take some time.
         print("closing cursor")
         c.close()
         print("closing connection")
@@ -80,9 +82,9 @@ def main():
     finally:
         cnx.close()
 
+    t = time.time() - t1
     logging.info(
-        f"Parsed {n} rows in {round(time.time() - t1, 2)} seconds."
-        f" ({round(n/(time.time() - t1),2)} rows/sec)"
+        f"Parsed {n} rows in {round(t, 2)} seconds." f" ({round(n/t1,2)} rows/sec)"
     )
 
 

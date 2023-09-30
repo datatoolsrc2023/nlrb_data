@@ -3,6 +3,9 @@ from common import sql
 
 import unittest
 
+
+# Collect some rows from the pages table for testing.
+# Examples chosen to cover some common parsing patterns to check.
 test_rows_query = """
 SELECT case_id, case_number, raw_text 
 FROM pages
@@ -18,6 +21,8 @@ IN (
     );
 """
 
+# If the `pages` table doesn't contain these cases,
+# randomly select up to 5 rows that have participants.
 random_test_rows_query = """
 SELECT case_id, case_number, raw_text
 FROM pages
@@ -28,11 +33,14 @@ LIMIT 5;
 
 
 class TestParseParticipants(unittest.TestCase):
-    # Collect test cases from the pages table.
+    """
+    Collect test cases from the pages table.
+    """
+
     @classmethod
     def setUpClass(cls) -> None:
         with sql.db_cnx() as cls.cnx:
-            # First, try check for and collect some given test cases.
+            # First, try to collect default test cases.
             print("Selecting test cases...")
             cls.c = cls.cnx.cursor()
             cls.c.execute(test_rows_query)
@@ -51,15 +59,20 @@ class TestParseParticipants(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """
+        Close the class's cursor and connection.
+        """
         cls.c.close()
         cls.cnx.close()
 
     def test_pd_raw_participants(self):
-        # First make sure the pd parser finds the appropriate table.
-        # If this fails, the test case has no participants.
+        """
+        First make sure the pd parser finds the appropriate table.
+        If this fails, the test case has no participants.
+        """
         for test_text in self.test_cases:
             with self.subTest(test_text=test_text[2]):
-                self.assertIsNotNone(participants.pd_raw_participants(test_text[2]))
+                self.assertIsNotNone(participants.pd_parser(test_text[2]))
 
     def test_matching_cardinality_raw_participants(self):
         """
@@ -68,15 +81,16 @@ class TestParseParticipants(unittest.TestCase):
         """
         for test_text in self.test_cases:
             with self.subTest(test_text=test_text[2]):
-                pd_raw_participants = participants.pd_raw_participants(test_text[2])
+                pd_raw_participants = participants.pd_parser(test_text[2])
                 html_raw_participants = participants.html_raw_participants(test_text[2])
-                # Uncomment to see the number of participants
+                # Uncomment below to see the number of participants
                 # found by the pd and html based parsers.
-
-                # print(
-                #    f"lengths of pd:{len(pd_raw_participants)},\
-                #   html:{len(html_raw_participants)}"
-                # )
+                """
+                print(
+                   f"lengths of pd:{len(pd_raw_participants)},\
+                  html:{len(html_raw_participants)}"
+                )
+                """
                 self.assertEqual(len(pd_raw_participants), len(html_raw_participants))
 
     def test_parser(self):

@@ -58,7 +58,8 @@ def html_raw_participants(html_str: str) -> list:
 
 def html_parse_single_participant(raw_participant: str) -> dict:
     """
-    Given an input HTML string, attempt to parse the following 4 pieces of metadata:
+    Given an input HTML string of a single raw_participant, 
+    attempt to parse the following 4 pieces of metadata:
     {
         "p_kind": ,
         "p_role": ,
@@ -68,15 +69,15 @@ def html_parse_single_participant(raw_participant: str) -> dict:
     """
     participantDict = {}
     raw_participant = raw_participant.find(name="td")
-    brCount = str(raw_participant).count("<br/>")
+    br_count = str(raw_participant).count("<br/>")
     participantDict["p_kind"] = clean_html(str(raw_participant).split("</b>")[0])
 
-    if brCount <= 2:
+    if br_count <= 2:
         participantDict["p_name"] = ""
         participantDict["p_org"] = ""
     # If there is only a name or only an organization associated with a participant,
     # it is impossible to reliably or consistently tell which it is.
-    # This code distinguishes them if they're both present, but
+    # This code distinguishes `p_name` and `p_org` if they're both present, but
     # it copies the same value for both dict keys if there's only one value present.
     # In other words, it responds to the ambiguity with redundancy.
     else:
@@ -84,7 +85,7 @@ def html_parse_single_participant(raw_participant: str) -> dict:
         participantDict["p_org"] = clean_html(
             str(raw_participant).rsplit(sep="<br/>")[-2]
         )
-    if brCount == 1:
+    if br_count == 1:
         participantDict["p_role"] = ""
     else:
         participantDict["p_role"] = clean_html(str(raw_participant).split("/>")[1][:-3])

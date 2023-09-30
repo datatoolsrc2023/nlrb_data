@@ -84,7 +84,7 @@ def main():
 
     t = time.time() - t1
     logging.info(
-        f"Parsed {n} rows in {round(t, 2)} seconds." f" ({round(n/t1,2)} rows/sec)"
+        f"Parsed {n} rows in {round(t, 2)} seconds." f" ({round(n/t,2)} rows/sec)"
     )
 
 

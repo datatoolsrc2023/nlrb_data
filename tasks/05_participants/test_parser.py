@@ -4,8 +4,8 @@ from common import sql
 import unittest
 
 
-# Collect some rows from the pages table for testing.
-# Examples chosen to cover some common parsing patterns to check.
+# Collect rows from the pages table for testing.
+# The first query uses cases to check some common parsing patterns.
 test_rows_query = """
 SELECT case_id, case_number, raw_text 
 FROM pages
@@ -84,7 +84,7 @@ class TestParseParticipants(unittest.TestCase):
                 pd_raw_participants = participants.pd_parser(test_text[2])
                 html_raw_participants = participants.html_raw_participants(test_text[2])
                 # Uncomment below to see the number of participants
-                # found by the pd and html based parsers.
+                # found by the pd and html parsers, respectively.
                 """
                 print(
                    f"lengths of pd:{len(pd_raw_participants)},\

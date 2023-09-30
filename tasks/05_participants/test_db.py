@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     pages_query = "SELECT COUNT(*) c from pages"
     participants_query = "SELECT COUNT(*) c from participants"
-    
+
     print("Attempting to count pages and check that participants table is empty...")
     try:
         with sql.db_cnx() as cnx:

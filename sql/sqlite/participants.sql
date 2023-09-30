@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS participants (
     id INTEGER PRIMARY KEY,
     case_id INT NOT NULL,
+    case_number TEXT NOT NULL,
     p_kind TEXT,
     p_role TEXT,
     p_name TEXT,

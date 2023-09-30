@@ -13,17 +13,18 @@ logging.basicConfig(
 
 
 def main():
-    # get the case_id_case_number, raw_participants column from the pages table
+    # Get the case_id, case_number, raw_participants column from the pages table
+    # for cases that actually have participants.
+
     participants_query = """
-    SELECT c.id as case_id, c.case_number, c.participants_raw, e.participants_parse_error, p.raw_text
-    FROM cases c
-    INNER JOIN error_log e ON c.id = e.case_id
-    LEFT JOIN pages p ON c.id = p.case_id
-    WHERE c.participants_raw <> ''
-    AND e.participants_parse_error IS NULL
-    OR e.participants_parse_error = true
-    limit 1000;
+    SELECT p.case_id, p.case_number, p.raw_text
+    FROM pages p
+    JOIN error_log e ON p.case_id = e.case_id
+    WHERE p.raw_text NOT LIKE '%Participants data is not available%'
+    AND (e.participants_parse_error IS NULL
+    OR e.participants_parse_error = true);
     """
+    
     try:
         with sql.db_cnx() as cnx:
             c = cnx.cursor()
@@ -41,21 +42,22 @@ def main():
                 result = c
                 n = c.rowcount
                 result = result.fetchall()
-        
 
     except Exception as e:
         print("Unable to query database.")
-        logging.warning(f"Unable to query database..")
+        logging.warning("Unable to query database..")
         raise e
 
     else:
         print("Database queried successfully!")
         print(f"Pages with participants: {n}")
-        print("Processing participants...")
     finally:
+        print("closing cursor")
         c.close()
+        print("closing connection")
         cnx.close()
 
+    print("Processing participants...")
     t1 = time.time()
     try:
         with sql.db_cnx() as cnx:
@@ -65,10 +67,11 @@ def main():
     except Exception as e:
         c = cnx.cursor()
         c.execute("select count(*) from pages;")
+        row_count = len(c.fetchall())
         t = time.time() - t1
-        part_rate = round((n - c.rowcount) / t, 2)
+        part_rate = round((n - row_count) / t, 2)
         logging.warning(
-            f"Parsed {c.rowcount} rows out of {n} in {round(t, 2)}s: {part_rate}p/s."
+            f"Parsed {row_count} rows out of {n} in {round(t, 2)}s: {part_rate} p/s."
         )
 
         raise e
@@ -76,7 +79,11 @@ def main():
         print("...participants processed successfully!")
     finally:
         cnx.close()
-    logging.info(f"Completed parsing of {n} rows in {round(time.time() - t1, 2)}")
+
+    logging.info(
+        f"Parsed {n} rows in {round(time.time() - t1, 2)} seconds."
+        f" ({round(n/(time.time() - t1),2)} rows/sec)"
+    )
 
 
 if __name__ == "__main__":

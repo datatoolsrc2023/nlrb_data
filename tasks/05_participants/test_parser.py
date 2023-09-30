@@ -1,84 +1,86 @@
-#!/usr/bin/env python3
-
 import participants
 from common import sql
 
 import unittest
 
-random_row_query = """
-select c.id as case_id, c.case_number, p.raw_text 
-from cases c 
-left join pages p on c.id = p.case_id
-where c.participants_raw IS NOT NULL
-order by random() limit 1;
+test_rows_query = """
+SELECT case_id, case_number, raw_text 
+FROM pages
+WHERE case_number 
+IN (
+    '31-CA-028366', 
+    '11-CA-066432', 
+    '22-CB-251531', 
+    '28-CA-078475', 
+    '01-CA-045448',
+    '20-CA-123557', 
+    '03-CB-009071'
+    );
 """
 
-with sql.db_cnx() as cnx:
-    c = cnx.cursor()
-    c.execute(random_row_query)
-    test_row = c.fetchone()
-    print("Test case:", test_row[0], test_row[1])
+random_test_rows_query = """
+SELECT case_id, case_number, raw_text
+FROM pages
+WHERE raw_text NOT LIKE '%Participants data is not available%'
+AND random() < .1
+LIMIT 5;
+"""
 
 
 class TestParseParticipants(unittest.TestCase):
+    # Collect test cases from the pages table.
+    @classmethod
+    def setUpClass(cls) -> None:
+        with sql.db_cnx() as cls.cnx:
+            # First, try check for and collect some given test cases.
+            print("Selecting test cases...")
+            cls.c = cls.cnx.cursor()
+            cls.c.execute(test_rows_query)
+            cls.test_cases = cls.c.fetchall()
+
+        # If there aren't enough specified test cases present in the pages table,
+        # choose random non-empty rows from the pages table.
+        if len(cls.test_cases) < 3:
+            cls.c.execute(random_test_rows_query)
+            cls.test_cases = cls.c.fetchall()
+
+        print(
+            "Test cases (case_id, case_number):\n",
+            [(x[0], x[1]) for x in cls.test_cases],
+        )
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.c.close()
+        cls.cnx.close()
+
+    def test_pd_raw_participants(self):
+        # First make sure the pd parser finds the appropriate table.
+        # If this fails, the test case has no participants.
+        for test_text in self.test_cases:
+            with self.subTest(test_text=test_text[2]):
+                self.assertIsNotNone(participants.pd_raw_participants(test_text[2]))
+
     def test_matching_cardinality_raw_participants(self):
         """
-        Ensure the two functions for parsing the participants
+        Ensure consistency between the two functions for parsing the participants.
         (one uses pandas' read_html(), one parses the raw html using bs4)
         """
-        pd_raw_participants = participants.pd_raw_participants(test_row[2])
-        html_raw_participants = participants.html_raw_participants(test_row[2])
-        print(
-            f"lengths of pd:{len(pd_raw_participants)}, html:{len(html_raw_participants)}"
-        )
-        self.assertEqual(len(pd_raw_participants), len(html_raw_participants))
+        for test_text in self.test_cases:
+            with self.subTest(test_text=test_text[2]):
+                pd_raw_participants = participants.pd_raw_participants(test_text[2])
+                html_raw_participants = participants.html_raw_participants(test_text[2])
+                # Uncomment to see the number of participants found by the pd and html based parsers.
+                # print(
+                #    f"lengths of pd:{len(pd_raw_participants)}, html:{len(html_raw_participants)}"
+                # )
+                self.assertEqual(len(pd_raw_participants), len(html_raw_participants))
 
-
-class TestParticipantHtmlParse(unittest.TestCase):
-    def test_html_participants_parse(self):
-        test_case = participants.html_raw_participants(test_row[2])
-        self.assertIsNotNone(participants.html_parse_participant(test_case))
-
-    """
-    def test_html_parse_3_br(self):
-        test_case = participants.html_raw_participants(test_case[1])
-        #print(participants.html_raw_participants(test_case2))
-        self.assertIsNotNone(participants.html_parse_participant(test_case))
-    """
-
-
-class TestParticipantPdParse(unittest.TestCase):
-    def test_pd_participants_columns(self):
-        result = participants.pd_raw_participants(test_row[2])
-        # print(result)
-
-        self.assertIsNotNone(result)
-
-
-class TestParticipantParse(unittest.TestCase):
     def test_parser(self):
-        result = participants.parse_participant(test_row[2])
-        # print(result)
-
-        self.assertIsNotNone(result)
-
-    """
-    def test_process(self):
-        with sql.db_cnx() as cnx:
-            c = cnx.cursor()
-            random_row_query = "select case_id, case_number, raw_text from pages order by random() limit 1;"
-            c.execute(random_row_query)
-            test_case = c.fetchone()
-            print('process:', test_case['case_number'])
-            participants.process_participants(cursor=c, case_row=test_case)
-            u
-
-        c.close()
-        cnx.close()
-    """
+        for test_text in self.test_cases:
+            with self.subTest(test_text=test_text[2]):
+                self.assertIsNotNone(test_text)
 
 
 if __name__ == "__main__":
     unittest.main()
-    c.close()
-    cnx.close()
